@@ -12,8 +12,7 @@
   "peerDependencies": {
     "through2": "*",
     "gulp-util": "*",
-    "sax": "*",
-    "misc": "git+ssh://github.com/QiV/misc.git#master"
+    "sax": "*"
   },
   "devDependencies": {
     "gulp": "*",
