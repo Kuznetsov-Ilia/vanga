@@ -1,0 +1,32 @@
+{
+  "name": "fest-dom-loader",
+  "version": "0.0.1",
+  "description": "webpack loader for fest-dom",
+  "author": "Ilia Kuznetsov",
+  "contributors": [{
+    "name": "Ilia Kuznetsov",
+    "email": "killxxxvi@mail.ru"
+  }],
+  "main": "index.js",
+  "scripts": {},
+  "peerDependencies": {
+    "through2": "*",
+    "gulp-util": "*",
+    "sax": "*",
+    "misc": "git+ssh://github.com/QiV/misc.git#master"
+  },
+  "devDependencies": {
+    "gulp": "*",
+    "gulp-rename": "*",
+    "gulp-beautify": "*",
+    "gulp-spawn-shim": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/QiV/fest-dom-loader"
+  },
+  "keywords": [
+    "webpackplugin"
+  ],
+  "license": "MIT"
+}
