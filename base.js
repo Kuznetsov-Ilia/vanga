@@ -2,14 +2,15 @@ var template = document.createElement('template');
 var div = document.createElement('div');
 var fragment = document.createDocumentFragment();
 var textNode = document.createTextNode('');
-import {isObject} from 'misc/utils';
+import {isObject, isArray} from 'misc/utils';
 export default class Template {
 
-  constructor(html, conf, attrs, classes) {
+  constructor(html, conf, attrs, classes, forwarding) {
     this.html = html;
     this.conf = conf;
     this.attrs = attrs;
     this.classes = classes;
+    this.forwarding = forwarding;
     this.subClass = {};
     this.prev = {};
   }
@@ -22,6 +23,9 @@ export default class Template {
       });
     } else if (key in this.conf) {
       this.conf[key].forEach(setItem(key, value, this, _all));
+      if (key in this.forwarding) {
+        this.forwarding[key].forEach(setForwarding(this.classes, value, _all));
+      }
     } else {
       console.error('unknown key', key);
     }
@@ -65,6 +69,14 @@ export default class Template {
     }
   }
 
+}
+
+function setForwarding(classes, value, _all) {
+  return function(forwarded) {
+    var fclass = classes[forwarded.sub];
+    var fkey = forwarded.key;
+    fclass.set(fkey, value, _all);
+  };
 }
 
 function replaceMents(item) {
@@ -186,16 +198,16 @@ function setItem(key, value, _this, _all) {
       item.prev = value;
     break;
     case 'class':
-      if (DEBUG && isObject(value)) {
+      if (isObject(value)) {
         if (isArray(value)) {
-          _this.subClass[key].clone()
+          /*_this.subClass[key].clone()
           value.forEach(function(val){
             _this.subClass[key].set(value);
-          });
+          });*/
         } else {
           _this.subClass[key].set(value);
         }
-      } else {
+      } else if (DEBUG) {
         console.error('value must be Object to set it to subclass', key, value);
       }
     break;

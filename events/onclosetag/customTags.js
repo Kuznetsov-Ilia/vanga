@@ -23,6 +23,7 @@ function getClassStr (node, parser) {
   var tmpl = path.join(__dirname, '../..', 'class-tmpl.js');
   var name = node.name;
   var expressions = parser.expressions.join(';');
+  var forwarding = JSON.stringify(parser.forwarding);
   //var type = JSON.stringify(parser.types) || '{}';
   var attr = JSON.stringify(parser.attr) || '[]';
   var prev = JSON.stringify(parser.types) || '{}';
@@ -49,6 +50,7 @@ function getClassStr (node, parser) {
   parser.el = {};
   parser.attr = [];
   parser.elConf = {};
+  parser.forwarding = [];
 
   return fs.readFileSync(tmpl).toString()
     .replace('__EXPORT__', isExport)
@@ -61,7 +63,8 @@ function getClassStr (node, parser) {
     .replace('__SUBCLASS__', subclass)
     //.replace('__SUBCLASS_INDEX__', subClassIndex)
     .replace('__ATTR__', attr)
-    .replace('__PREV__', prev);
+    .replace('__PREV__', prev)
+    .replace('__FORWARDING__', forwarding);
 }
 
 

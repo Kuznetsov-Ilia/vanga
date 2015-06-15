@@ -2,7 +2,7 @@ module.exports = function(node, parser) {
   if (node.parent) {
     var key = node.name;
     var index = parser.subClass.indexOf(key);
-    
+
     if (index === -1) {
       index = parser.subClass.push(node.name) - 1;
     }
@@ -26,13 +26,22 @@ module.exports = function(node, parser) {
         index: keyIndex
       });
     }
-    //parser.el[node.name] = parser.arrayToPath(node.path);
-    //parser.types[node.name] = 'class';
-    //parser.subClass[node.name] = node.name;
-    //parser.subClassIndex[node.name] = parser.subClass.push(node.name) - 1;
+    compileAttributes(node, parser, keyIndex);
     parser.source.push('"<!--' + node.name + '-->"');
   } else {
     node.siblings = -1;
     node.path = [];
   }
 };
+function compileAttributes(node, parser, keyIndex) {
+  for (var i in node.attributes) {
+    if (i === 'if') {
+      continue;//reserved
+    } else {
+      parser.forwarding.push({
+        sub: keyIndex,
+        key: node.attributes[i].value
+      });
+    }
+  }
+}
