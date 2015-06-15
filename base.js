@@ -37,6 +37,13 @@ export default class Template {
     }
   }
 
+  clone (){
+    var root = this.root.cloneNode(true);
+    return new function() {
+      this.root = root;
+    };
+  }
+
   render(data, domRoot) {
     var root = this.root = load(this.html);
     var conf = this.conf;
@@ -60,7 +67,7 @@ export default class Template {
 
 }
 
-function replaceMents(item){
+function replaceMents(item) {
   if (item && item[0] && item[0].parentNode) {
     item[0].parentNode.replaceChild(item[1], item[0]);
   }
@@ -180,7 +187,14 @@ function setItem(key, value, _this, _all) {
     break;
     case 'class':
       if (DEBUG && isObject(value)) {
-        _this.subClass[key].set(value);
+        if (isArray(value)) {
+          _this.subClass[key].clone()
+          value.forEach(function(val){
+            _this.subClass[key].set(value);
+          });
+        } else {
+          _this.subClass[key].set(value);
+        }
       } else {
         console.error('value must be Object to set it to subclass', key, value);
       }

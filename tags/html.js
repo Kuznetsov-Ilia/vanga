@@ -77,6 +77,7 @@ module.exports = [
 'nav',
 'noframes',
 'noscript',
+'noindex',// legacy for yandex
 'object',
 'ol',
 'optgroup',
