@@ -1,0 +1,46 @@
+{
+  "name": "fest-dom-loader",
+  "version": "0.0.1",
+  "description": "webpack loader for fest-dom",
+  "author": {
+    "name": "Ilia Kuznetsov"
+  },
+  "contributors": [
+    {
+      "name": "Ilia Kuznetsov",
+      "email": "killxxxvi@mail.ru"
+    }
+  ],
+  "main": "index.js",
+  "scripts": {},
+  "peerDependencies": {
+    "through2": "*",
+    "gulp-util": "*",
+    "sax": "*"
+  },
+  "devDependencies": {
+    "gulp": "*",
+    "gulp-rename": "*",
+    "gulp-beautify": "*",
+    "gulp-spawn-shim": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QiV/fest-dom-loader.git"
+  },
+  "keywords": [
+    "webpackplugin"
+  ],
+  "license": "MIT",
+  "gitHead": "ad384beb5d90d6377166f5f0827044c5ac911b23",
+  "readme": "1) взрывается када <space /> впихивается рядом с текстовыми переменными, типа:\n```\n<space />{textVar}\n```\n",
+  "readmeFilename": "readme.md",
+  "bugs": {
+    "url": "https://github.com/QiV/fest-dom-loader/issues"
+  },
+  "homepage": "https://github.com/QiV/fest-dom-loader#readme",
+  "_id": "fest-dom-loader@0.0.1",
+  "_shasum": "f014b3a2e600d431b5b4627a16dbe0f1dc7d04bd",
+  "_from": "git+ssh://git@github.com/QiV/fest-dom-loader.git#master",
+  "_resolved": "git+ssh://git@github.com/QiV/fest-dom-loader.git#ad384beb5d90d6377166f5f0827044c5ac911b23"
+}
