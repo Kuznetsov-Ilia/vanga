@@ -35,12 +35,15 @@ module.exports = function(node, parser) {
 };
 function compileAttributes(node, parser, keyIndex) {
   for (var i in node.attributes) {
-    if (i === 'if') {
+    if (['if', 'from'].indexOf(i) !== -1) {
       continue;//reserved
     } else {
-      parser.forwarding.push({
+      var from = node.attributes[i].value;
+      var to = i;
+      parser.forwarding[from] = parser.forwarding[from] || [];
+      parser.forwarding[from].push({
         sub: keyIndex,
-        key: node.attributes[i].value
+        key: to
       });
     }
   }

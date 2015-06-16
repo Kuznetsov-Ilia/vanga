@@ -46,6 +46,7 @@ function Parser(opts) {
   parser.subClass = [];
   parser.subClassIndex = {};
   parser.festStack = [];
+  parser.forwarding = {};
 
   parser.types = {};
   parser.el = {};
