@@ -50,7 +50,7 @@ function getClassStr (node, parser) {
   parser.el = {};
   parser.attr = [];
   parser.elConf = {};
-  parser.forwarding = [];
+  parser.forwarding = {};
 
   return fs.readFileSync(tmpl).toString()
     .replace('__EXPORT__', isExport)
