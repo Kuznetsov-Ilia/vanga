@@ -1,7 +1,7 @@
 {
-  "name": "fest-dom-loader",
+  "name": "vanga-loader",
   "version": "0.0.1",
-  "description": "webpack loader for fest-dom",
+  "description": "webpack loader for vanga",
   "author": "Ilia Kuznetsov",
   "contributors": [{
     "name": "Ilia Kuznetsov",
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/QiV/fest-dom-loader"
+    "url": "https://github.com/QiV/vanga"
   },
   "keywords": [
     "webpackplugin"
