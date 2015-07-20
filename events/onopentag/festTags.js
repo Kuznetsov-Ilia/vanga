@@ -167,9 +167,39 @@ module.exports = function(node, parser){
   case 'log':
     parser.expressions.push('console.log(');
     return;
+  
+  case 'import':
+    if (node.attributes.name) {
+      var name = parser.getAttr(node, 'name');
+      var from = parser.getAttr(node, 'from');
+      parser.imports[name] = from;
+      /*var imports = {};
+      var importDefault = node.attributes.default;// && node.attributes.default.value;
+      for (var name in node.attributes) {
+        if (name !== 'default') {
+          imports[importDefault ? name : '{'+name+'}'] = node.attributes[name].value;
+        }
+      }
+      extend(parser.imports, imports);*/
+    }
+    return;
+  
+  case 'export':
+    if (node.attributes) {
+      parser.exports = parser.exports.concat(Object.keys(node.attributes));
+    }
+    return;
+
   }
 }
 
+function extend (original, extended) {
+  extended = extended || {};
+  for (var key in extended) {
+    original[key] = extended[key];
+  }
+  return original;
+}
 
 function openScope(parser, node) {
   switch (node.local) {

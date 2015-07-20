@@ -36,7 +36,7 @@ module.exports = function (text) {
         siblings++;
       }
       parser.elConf[key] = parser.elConf[key] || [];
-      parser.elConf[key].push({ type: type, el: parser.arrayToPath(pos) });
+      parser.elConf[key].push({ type: type, path: parser.arrayToPath(pos) });
       return text.replace(match, '');
     };
     //console.log(text);

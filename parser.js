@@ -38,21 +38,22 @@ function Parser(opts) {
   parser.onend = require('./events/onend');
   parser.log = log;
 
-  parser.expressions = [];
-  parser.exprCnt = 0;
+//  parser.expressions = [];
+ // parser.exprCnt = 0;
   parser.source = [];
   parser.nodeNamesStack = [];
-  //parser.nodeStack = [];
-  parser.subClass = [];
-  parser.subClassIndex = {};
+
   parser.festStack = [];
-  parser.forwarding = {};
-  parser.types = {};
+  parser.bindings = {};
+ 
   parser.el = {};
   parser.attr = [];
   parser.elConf = {};
 
-  parser.classes = [];// ./class-tmpl.js instanses
+  parser.exports = [];
+  parser.imports = {};
+
+  parser.templates = [];// ./class-tmpl.js instanses
 
   var defaults = {
     lang: 'js',
@@ -88,21 +89,7 @@ Parser.prototype.write = function (xmlString, filepath) {
 };
 
 Parser.prototype.getSource = function () {
-  var output;
-  if (this.parser.lang === 'lua') {
-    output = fs.readFileSync(path.join(__dirname, 'tmpl.lua')).toString()
-      .replace(/__VARS__/, this.parser.expressions.join('\n') || '')
-      .replace(/__SOURCE__/, this.parser.source.join('..') || '""')
-      .replace(/"\.\."/g, '');
-  } else if (this.parser.lang === 'Xslate') {
-    output = this.parser.source.join('').replace(/:><:/g, '\n');
-  } else {
-    output = fs.readFileSync(path.join(__dirname, 'tmpl.js')).toString()
-      .replace('__TemplatePath__', this.parser.opts.path)
-      .replace('__CLASSES__', this.parser.classes.join(';\n'));
-  }
-
-  return new Buffer(output);
+  return new Buffer(this.parser.output);
 };
 
 function escapeJS(s) {
