@@ -1,70 +1,43 @@
 var fs = require('fs');
 var path = require('path');
+var tmpl = path.join(__dirname, '../..', 'class-tmpl.js');
 module.exports = function(node, parser) {
   if (node.parent) {
     if (node.attributes.from) {
-      var name = node.name;
-      var from = parser.getAttr(node, 'from');
-      parser.expressions.push(
-        'import {name} from \'{from}\''.replace('{name}', name).replace('{from}', from)
-      );
+      parser.imports[node.name] = parser.getAttr(node, 'from');
     }
   } else {
-    parser.classes.push(getClassStr(node, parser));
+    parser.templates.push(getClassStr(node, parser));
   }
 };
 
 function getClassStr (node, parser) {
-  var html = (parser.source.join('+') || '""').replace(/"\+"/g, '');
-  //var el = obj2str(parser.el);
-  var subclass = arr2str(parser.subClass);
-  //var subClassIndex = obj2str(parser.subClassIndex);
-  var conf = JSON.stringify(parser.elConf);
-  var tmpl = path.join(__dirname, '../..', 'class-tmpl.js');
   var name = node.name;
-  var expressions = parser.expressions.join(';');
-  var forwarding = JSON.stringify(parser.forwarding);
-  //var type = JSON.stringify(parser.types) || '{}';
+  var html = (parser.source.join('+') || '""').replace(/"\+"/g, '');
+  var conf = JSON.stringify(parser.elConf);
   var attr = JSON.stringify(parser.attr) || '[]';
-  var prev = JSON.stringify(parser.types) || '{}';
-  var isExport = '';
+  var bindings = JSON.stringify(parser.bindings);
+  var exports = '';
   if (node.attributes.export) {
-
-    isExport = 'export';
     if (parser.getAttr(node, 'export') === 'default') {
-      isExport += ' default';
-      //isExport += '; exports[\'default\'] = ' + name;
+      //parser.exportDefault = node.name;
+      exports = 'export default ' + name;
+    } else {
+      //parser.exports.push(node.name);
+      exports = 'export {' + name + '}';
     }
-
   }
-
-  parser.expressions = [];
-  parser.exprCnt = 0;
-  parser.source = [];
-  parser.nodeNamesStack = [];
-  parser.subClass = [];
-  parser.subClassIndex = {};
-  parser.conf = {};
-  parser.festStack = [];
-  parser.types = {};
-  parser.el = {};
-  parser.attr = [];
+  parser.source = [];// html
   parser.elConf = {};
-  parser.forwarding = {};
-
+  parser.attr = [];
+  parser.bindings = {};
   return fs.readFileSync(tmpl).toString()
-    .replace('__EXPORT__', isExport)
-    .replace('__NAME__', name)
-    .replace('__EXPR__', expressions)
+    .replace('__EXPORT__', exports)
+    .replace(/__NAME__/g, name)
     .replace('__HTML__', html)
-    //.replace('__TYPE__', type)
     .replace('__CONF__', conf)
-    //.replace('__EL__', el)
-    .replace('__SUBCLASS__', subclass)
-    //.replace('__SUBCLASS_INDEX__', subClassIndex)
     .replace('__ATTR__', attr)
-    .replace('__PREV__', prev)
-    .replace('__FORWARDING__', forwarding);
+    .replace('__BIND__', bindings);
 }
 
 

@@ -36,19 +36,46 @@ function compileAttributes(node, parser) {
     }*/
     var keys = (attrValue.match(/{[^}]*}/g) || []).map(sliceParenthesis);
     if (keys && keys.length) {
-      var isComplex = !(keys.length === 1 && attrValue === '{' + keys[0] + '}');
-      var params = {
-        key: keys,
-        name: i,
-        isComplex: isComplex,
-        el: node.path
-      };
-      if (isComplex) {
-        params.tmpl = attrValue;
+      var aa = keys.reduce(function(obj, key) {
+        var attrStr = obj.attr;
+        var start = 0;
+        var result = obj.result;
+        var attrKeys = obj.keys;
+        var index = attrStr.indexOf('{' + key + '}');
+        var length = key.length + 2;
+        var stringAfter = attrStr.slice(index + length);
+        var before = attrStr.slice(start, index);
+        if (before) {
+          result.push(before);
+        }
+        var keyIndex = result.push('') - 1;
+        attrKeys[key] = attrKeys[key] || [];
+        attrKeys[key].push(keyIndex);
+        return {
+          attr: stringAfter,
+          result: result,
+          keys: attrKeys
+        };
+      }, {attr: attrValue, result: [], keys: {}});
+      var attrKeys = aa.keys;
+      var attrArray = aa.result;
+      if (aa.attr !== '') {// что-то осталось после итерации по всем ключам
+        attrArray.push(aa.attr);
       }
+
+      //var isComplex = !(keys.length === 1 && attrValue === '{' + keys[0] + '}');
+      var params = {
+        keys: attrKeys,
+        name: i,
+        tmpl: attrArray,
+        //isComplex: isComplex,
+        path: node.path
+      };
       var index = parser.attr.push(params) - 1;
       keys.forEach(pushKeys(parser, index));
-      attrsArray.push(i + '=\\"\\"');
+
+      attrsArray.push(i + '=\\"' + keys.reduce(getDefaultAttrValue, attrValue) + '\\"');
+
     } else {
       attrsArray.push(i + '=\\"' + attrValue + '\\"');
     }
@@ -68,4 +95,8 @@ function pushKeys(parser, index) {
     parser.elConf[key] = parser.elConf[key] || [];
     parser.elConf[key].push({type: 'attr', attr: index });
   };
+}
+
+function getDefaultAttrValue(attrValue, key) {
+  return String(attrValue.replace('{' + key + '}', '')).trim();
 }
