@@ -11,7 +11,7 @@
   ],
   "main": "index.js",
   "scripts": {},
-  "peerDependencies": {
+  "dependencies": {
     "through2": "*",
     "through": "*",
     "gulp-util": "*",
