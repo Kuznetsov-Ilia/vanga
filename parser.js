@@ -57,7 +57,7 @@ function Parser(opts) {
 
   var defaults = {
     lang: 'js',
-    path: 'fest-dom-loader/base',
+    path: 'vanga/base',
     name: 'tmpl'
   };
   parser.opts = extend(defaults, opts);

@@ -1,0 +1,3 @@
+<simpleTextCase export="default">
+  <div class="simpleTextCase">{textvar}</div>
+</simpleTextCase>

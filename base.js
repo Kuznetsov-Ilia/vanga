@@ -1,30 +1,21 @@
-//import 'babel-core/polyfill';
-var template = document.createElement('template');
-var div = document.createElement('div');
-div.className = 'base-wrapper';
-var fragment = document.createDocumentFragment();
-var textNode = document.createTextNode('');
-//var commentNode = document.createComment('');
-var clonedTags = {
-  div: div
-};
-
-import {isObject, isArray, isString, isFragment } from 'misc/utils';
-export default class Template {
-
-  constructor(html, conf, attrs, shared, binded) {
-    this.html = html;
-    this.conf = conf;
-    this.state = {};
-    this.attrs = attrs;
-    this.shared = shared;
-    this.binded = binded;
-    this.pendingUpdates = false;
-    this.pendingBinds = false;
-    this.isRendered = false;
-  }
-
-
+var template;
+var div;
+var fragment;
+var textNode;
+import {isObject, isArray, isString, isFragment} from 'misc/utils';
+export default Template;
+function Template(html, conf, attrs, shared, binded) {
+  this.html = html;
+  this.conf = conf;
+  this.state = {};
+  this.attrs = attrs;
+  this.shared = shared;
+  this.binded = binded;
+  this.pendingUpdates = false;
+  this.pendingBinds = false;
+  this.isRendered = false;
+}
+Object.assign(Template.prototype, {
   recursiveSet (key) {
     var _this = this;
     return Object.keys(key).reduce(set, []);
@@ -32,7 +23,7 @@ export default class Template {
     function set (result, k) {
       return result.concat(_this.set(k, key[k], key));
     }
-  }
+  },
   set (key, value) {
     var updates;
     if (isObject(key)) {
@@ -65,8 +56,7 @@ export default class Template {
     }
 
     //return this;
-
-  }
+  },
 
   get (key) {
     var state = this.state.vars[key];
@@ -79,7 +69,12 @@ export default class Template {
     } else {
       return console.error('unknown key', key);
     }*/
-  }
+  },
+
+  getEl(key) {
+    var state = this.state.vars[key];
+    return state ? state[0].el : false;
+  },
 
   clone () {
 
@@ -92,19 +87,19 @@ export default class Template {
       debugger;
     }
     return clone;
-  }
+  },
 
   remove () {
-    if (0 && this.parent) {
+    /*if (0 && this.parent) {
       this.parent.removeChild(this.root);
-    }
+    }*/
     if (isArray(this.root)) {
       var parent = this.root[0].parentNode;
       this.root.forEach(el => {parent.removeChild(el); });
     } else {
       debugger;
     }
-  }
+  },
 
   render(rootToBeRenderedTo) {
     if (this.isRendered) {
@@ -120,7 +115,7 @@ export default class Template {
     //var sub = this.sub;
     var attrs = this.attrs;
     this.state.vars = Object.keys(conf).reduce((state, key) => {
-      var a = conf[key].reduce(prepareState(root, attrs, key,/* sub,*/ shared), {childs:[], states:[]});
+      var a = conf[key].reduce(prepareState(root, attrs, key, shared), {childs:[], states:[]});
       a.childs.forEach(replaceChildren);
       state[key] = a.states;
       return state;
@@ -134,25 +129,24 @@ export default class Template {
     this.isRendered = true;
     return this;
   }
-}
+});
 
 function checkBindings(_this, key, value) {
-  //console.log('key:', key, ', value:', value, ', binded:', _this.binded);
   if (key in _this.binded) {
     var updates = _this.binded[key].map(setBindings(_this, key, value));
     if (_this.pendingBinds || _this.pendingUpdates) {
       return updates;
     } else {
-      commit(updates/*,  this.prev*/);
+      commit(updates);
     }
   }
   return [];
 }
 
-function prepareState(root, attrs, key, /*sub,*/ shared) {
+function prepareState(root, attrs, key, shared) {
   return function(reduced, confItem) {
     var path;
-    if (['text', 'html', 'class'].includes(confItem.type)) {
+    if (['text', 'html', 'class', 'named'].includes(confItem.type)) {
       path = confItem.path;
     } else if (confItem.type === 'attr') {
       path = attrs[confItem.attr].path;
@@ -171,38 +165,24 @@ function prepareState(root, attrs, key, /*sub,*/ shared) {
         el: el
       };
       if (confItem.type === 'text') {
+        if (textNode === undefined) {
+          textNode = document.createTextNode('');
+        }
         newChild = textNode.cloneNode();
         oldChild = el;
         states.el = newChild;
         reduced.childs.push([oldChild, newChild]);
       } else if (confItem.type === 'class') {
+        if (fragment === undefined) {
+          fragment = document.createDocumentFragment();
+        }
+
         oldChild = el;
-        var tag = confItem.tag;
-        if (0 && tag) {
-          if (!clonedTags[tag]) {
-            clonedTags[tag] = document.createElement(tag);
-          }
-          newChild = clonedTags[tag].cloneNode();
-        } else {
-          //newChild = div.cloneNode();
-          newChild = fragment.cloneNode();
-        }
-        if (0 && confItem.attrs) {
-          confItem.attrs.forEach(attr => {
-            var value = attr.value;
-            if (isObject(value)) {
-              console.error('data-* is not implemented');
-            } else {
-              newChild.setAttribute(attr.name, value);
-            }
-          });
-        }
+        newChild = fragment.cloneNode();
         states.el = oldChild;
         states.prevEl = newChild;
         states.isHidden = true;
         states.instance = shared[key].render().clone().render(newChild);
-        //sub[key] = shared[key];
-        //sub[key].render(newChild);
       }
       reduced.states.push(states);
     } else {
@@ -212,7 +192,7 @@ function prepareState(root, attrs, key, /*sub,*/ shared) {
   };
 }
 
-function commit(updates/*, prev*/) {
+function commit(updates) {
   var a = updates.reduce(combineUpdates, {el: [], updates: [], prev: {} });
   if (a && a.updates) {
     a.updates.map(doUpdates);
@@ -253,15 +233,13 @@ function combineUpdates(result, up) {
 
 function doUpdates(update) {
   if (update.attr) {
-    Object.keys(update.attr).forEach(function(key) {
-      update.el.setAttribute(key, update.attr[key]);
-    });
+    Object.keys(update.attr).forEach(key => {update.el.setAttribute(key, update.attr[key])});
   } else if (update.text) {
     update.el.nodeValue = update.text;
   } else if (update.html) {
     var oldChild = update.html[0];
     var newChild = update.html[1];
-    oldChild.parentNode.replaceChild(newChild, oldChild);
+    oldChild.replaceWith(newChild);
   } else if (update.map) {
     //
   } else if (update.el === undefined) {
@@ -282,31 +260,14 @@ function setBindings(_this, key, value) {
     var bindedValue = {};
     bindedValue[keyToBind] = value;
     _this.pendingBinds = true;
-    console.log('setBindings', subName, bindedValue);
     var updates = _this.set(subName, bindedValue);
     _this.pendingBinds = false;
     return updates;
-    /*var subToBind = _this.state.vars[subName];
-    subToBind.pendingBinds = true;
-    var updates = subToBind.map(sub => {
-      if (sub.isHidden) {
-        togglePrevEl(sub);
-        sub.isHidden = false;
-      }
-      sub.instance.pendingBinds = true;
-      var subUpdates = sub.instance.set(keyToBind, value);
-      sub.instance.pendingBinds = false;
-      return subUpdates;
-    });
-    subToBind.pendingBinds = false;
-    return updates;*/
   };
 }
 
 function replaceChildren(i) {
-  //if (i/* && i[0] && i[0].parentNode*/) {
-  i[0].parentNode.replaceChild(i[1], i[0]);
-  //}
+  i[0].replaceWith(i[1]);
 }
 
 function resolveEl(arr, root) {
@@ -318,19 +279,18 @@ function gotoChild(root, index) {
   return root.childNodes[index];
 }
 
-function loadWithDiv (strHTML) {
-  var root = div.cloneNode();
-  root.innerHTML = strHTML;
-  return root;
-}
 function loadWithIframe (strHTML) {
+  if (template === undefined) {
+    template = document.createElement('template');
+  }
   var root = template.cloneNode();
-  //var root = div.cloneNode();
   root.innerHTML = strHTML;
   return root.content || templateFallback(root);
-  //return templateFallback(root);
 }
 function templateFallback(root) {
+  if (fragment === undefined) {
+    fragment = document.createDocumentFragment();
+  }
   var f = fragment.cloneNode(false);
   var child;
   while (child = root.firstElementChild) {
@@ -365,6 +325,10 @@ function setItem(key, value, _this) {
         };
       /*break;*/
       case 'html':
+        if (div === undefined) {
+          div = document.createElement('div');
+          div.className = 'base-wrapper';
+        }
         var newChild = div.cloneNode();
         var oldChild = item.el;
         newChild.innerHTML = value;
@@ -397,7 +361,8 @@ function setItem(key, value, _this) {
             }
 
             //var newRoots = Array.from(item.f.childNodes).map(child => child);
-            targetNode.parentNode.insertBefore(item.f, null);
+            //targetNode.parentNode.insertBefore(item.f, null);
+            targetNode.parentNode.append(item.f);
 
             //var l = newRoots.length;
             //while (--l) {
@@ -434,7 +399,7 @@ function setItem(key, value, _this) {
         }
       break;
       }
-    } else{
+    } else {
       //debugger;
       //console.log('TODO: caching system for complex & multiple updates');
       /*if (value !== undefined) {
@@ -444,7 +409,7 @@ function setItem(key, value, _this) {
   };
 }
 function togglePrevEl(item) {
-  var newChild = item.prevEl/* || commentNode.cloneNode()*/;
+  var newChild = item.prevEl;/* || commentNode.cloneNode()*/
   var oldChild = item.el;
   var newRoot;
 
@@ -452,14 +417,20 @@ function togglePrevEl(item) {
     if (newChild.childNodes.length === 1) {
       newRoot = newChild.childNodes[0];
     } else {
-      newRoot = newChild.childNodes.slice(0)//.map(child => child);
+      newRoot = newChild.childNodes.slice(0);//.map(child => child);
     }
   }
   //var newRoot = newChild.childNodes;
   if (isArray(oldChild)) {
-    debugger;
+    var lastChild = oldChild.pop();
+    //var parentChild = lastChild.parentNode;
+    lastChild.replaceWith(newChild);
+    //parentChild.replaceChild(newChild, lastChild);
+    oldChild.forEach(child => { child.remove(); } );
+  } else {
+    oldChild.replaceWith(newChild);
+    //oldChild.parentNode.replaceChild(newChild, oldChild);
   }
-  oldChild.parentNode.replaceChild(newChild, oldChild);
   if (isFragment(newChild)) {
     newChild = newRoot;
   }
@@ -468,6 +439,9 @@ function togglePrevEl(item) {
 }
 
 function makeClones(item, valLength, toBeCloned) {
+  if (fragment === undefined) {
+    fragment = document.createDocumentFragment();
+  }
   var f = fragment.cloneNode();
   var k = toBeCloned.root.childNodes.length;
   item.clones = [toBeCloned];
@@ -486,6 +460,9 @@ function doClonedStaff(item, value) {
   if (clonLength > valLength) {
     item.clones.slice(valLength).forEach(tmpl => { tmpl.remove(); tmpl = null; });
   } else if (clonLength < valLength) {
+    if (fragment === undefined) {
+      fragment = document.createDocumentFragment();
+    }
     var f = fragment.cloneNode();
     var toBeCloned = item.instance;
     //item.clones.reduce(c => (f.appendChild(c.root.cloneNode(true)), f), f);

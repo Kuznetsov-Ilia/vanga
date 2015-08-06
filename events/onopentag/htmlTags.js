@@ -28,56 +28,58 @@ function compileAttributes(node, parser) {
   var n = 0;
   var attrsArray = [''];
 
+
   for (i in attrs) {
     var attrValue = attrs[i].value;
-    /*if (i === 'if') {
-      parser.ifs[attrValue] = '';
-      node.conditional = attrValue;
-    }*/
-    var keys = (attrValue.match(/{[^}]*}/g) || []).map(sliceParenthesis);
-    if (keys && keys.length) {
-      var aa = keys.reduce(function(obj, key) {
-        var attrStr = obj.attr;
-        var start = 0;
-        var result = obj.result;
-        var attrKeys = obj.keys;
-        var index = attrStr.indexOf('{' + key + '}');
-        var length = key.length + 2;
-        var stringAfter = attrStr.slice(index + length);
-        var before = attrStr.slice(start, index);
-        if (before) {
-          result.push(before);
-        }
-        var keyIndex = result.push('') - 1;
-        attrKeys[key] = attrKeys[key] || [];
-        attrKeys[key].push(keyIndex);
-        return {
-          attr: stringAfter,
-          result: result,
-          keys: attrKeys
-        };
-      }, {attr: attrValue, result: [], keys: {}});
-      var attrKeys = aa.keys;
-      var attrArray = aa.result;
-      if (aa.attr !== '') {// что-то осталось после итерации по всем ключам
-        attrArray.push(aa.attr);
-      }
-
-      //var isComplex = !(keys.length === 1 && attrValue === '{' + keys[0] + '}');
-      var params = {
-        keys: attrKeys,
-        name: i,
-        tmpl: attrArray,
-        //isComplex: isComplex,
-        path: node.path
-      };
-      var index = parser.attr.push(params) - 1;
-      keys.forEach(pushKeys(parser, index));
-
-      attrsArray.push(i + '=\\"' + keys.reduce(getDefaultAttrValue, attrValue) + '\\"');
-
+    if (i === 'as') {
+      parser.elConf[attrValue] = parser.elConf[attrValue] || [];
+      parser.elConf[attrValue].push({type: 'named', path: node.path });
     } else {
-      attrsArray.push(i + '=\\"' + attrValue + '\\"');
+      var keys = (attrValue.match(/{[^}]*}/g) || []).map(sliceParenthesis);
+      if (keys && keys.length) {
+        var aa = keys.reduce(function(obj, key) {
+          var attrStr = obj.attr;
+          var start = 0;
+          var result = obj.result;
+          var attrKeys = obj.keys;
+          var index = attrStr.indexOf('{' + key + '}');
+          var length = key.length + 2;
+          var stringAfter = attrStr.slice(index + length);
+          var before = attrStr.slice(start, index);
+          if (before) {
+            result.push(before);
+          }
+          var keyIndex = result.push('') - 1;
+          attrKeys[key] = attrKeys[key] || [];
+          attrKeys[key].push(keyIndex);
+          return {
+            attr: stringAfter,
+            result: result,
+            keys: attrKeys
+          };
+        }, {attr: attrValue, result: [], keys: {}});
+        var attrKeys = aa.keys;
+        var attrArray = aa.result;
+        if (aa.attr !== '') {// что-то осталось после итерации по всем ключам
+          attrArray.push(aa.attr);
+        }
+
+        //var isComplex = !(keys.length === 1 && attrValue === '{' + keys[0] + '}');
+        var params = {
+          keys: attrKeys,
+          name: i,
+          tmpl: attrArray,
+          //isComplex: isComplex,
+          path: node.path
+        };
+        var index = parser.attr.push(params) - 1;
+        keys.forEach(pushKeys(parser, index));
+
+        attrsArray.push(i + '=\\"' + keys.reduce(getDefaultAttrValue, attrValue) + '\\"');
+
+      } else {
+        attrsArray.push(i + '=\\"' + attrValue + '\\"');
+      }
     }
   }
   if (attrsArray.length > 1) {

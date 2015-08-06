@@ -1,0 +1,3 @@
+<simpleHtml export="default">
+  <div class="simpleHtml">{htmlvar|html}</div>
+</simpleHtml>
