@@ -37,6 +37,7 @@ function compileAttributes(node, parser) {
     } else {
       var keys = (attrValue.match(/{[^}]*}/g) || []).map(sliceParenthesis);
       if (keys && keys.length) {
+        //console.log(attrValue);
         var aa = keys.reduce(function(obj, key) {
           var attrStr = obj.attr;
           var start = 0;
@@ -47,6 +48,7 @@ function compileAttributes(node, parser) {
           var stringAfter = attrStr.slice(index + length);
           var before = attrStr.slice(start, index);
           if (before) {
+            //before = parser.explode$(before);
             result.push(before);
           }
           var keyIndex = result.push('') - 1;
@@ -75,9 +77,10 @@ function compileAttributes(node, parser) {
         var index = parser.attr.push(params) - 1;
         keys.forEach(pushKeys(parser, index));
 
+        attrValue = parser.match$(attrValue);
         attrsArray.push(i + '=\\"' + keys.reduce(getDefaultAttrValue, attrValue) + '\\"');
-
       } else {
+        attrValue = parser.match$(attrValue);
         attrsArray.push(i + '=\\"' + attrValue + '\\"');
       }
     }

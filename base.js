@@ -2,6 +2,7 @@ var template;
 var div;
 var fragment;
 var textNode;
+import {document} from 'global';
 import {isObject, isArray, isString, isFragment} from 'misc/utils';
 export default Template;
 function Template(html, conf, attrs, shared, binded) {
@@ -94,8 +95,9 @@ Object.assign(Template.prototype, {
       this.parent.removeChild(this.root);
     }*/
     if (isArray(this.root)) {
-      var parent = this.root[0].parentNode;
-      this.root.forEach(el => {parent.removeChild(el); });
+      //var parent = this.root[0].parentNode;
+      //this.root.forEach(el => {parent.removeChild(el); });
+      this.root.forEach(el => { el.remove(); });
     } else {
       debugger;
     }
@@ -107,7 +109,6 @@ Object.assign(Template.prototype, {
     }
     var root = this.root;
     if (!root) {
-      //root = this.root = loadWithDiv(this.html);
       root = this.root = loadWithIframe(this.html);
     }
     var conf = this.conf;
@@ -115,7 +116,7 @@ Object.assign(Template.prototype, {
     //var sub = this.sub;
     var attrs = this.attrs;
     this.state.vars = Object.keys(conf).reduce((state, key) => {
-      var a = conf[key].reduce(prepareState(root, attrs, key, shared), {childs:[], states:[]});
+      var a = conf[key].reduce(prepareState(root, attrs, key, shared), {childs: [], states: []});
       a.childs.forEach(replaceChildren);
       state[key] = a.states;
       return state;
@@ -131,7 +132,7 @@ Object.assign(Template.prototype, {
   }
 });
 
-function checkBindings(_this, key, value) {
+/*function checkBindings(_this, key, value) {
   if (key in _this.binded) {
     var updates = _this.binded[key].map(setBindings(_this, key, value));
     if (_this.pendingBinds || _this.pendingUpdates) {
@@ -142,7 +143,7 @@ function checkBindings(_this, key, value) {
   }
   return [];
 }
-
+*/
 function prepareState(root, attrs, key, shared) {
   return function(reduced, confItem) {
     var path;
@@ -150,8 +151,6 @@ function prepareState(root, attrs, key, shared) {
       path = confItem.path;
     } else if (confItem.type === 'attr') {
       path = attrs[confItem.attr].path;
-    } else if (DEBUG) {
-      console.log('no path for type', confItem.type);
     }
     if (path) {
       var newChild;
@@ -164,7 +163,8 @@ function prepareState(root, attrs, key, shared) {
         type: confItem.type,
         el: el
       };
-      if (confItem.type === 'text') {
+      switch (confItem.type) {
+      case 'text':
         if (textNode === undefined) {
           textNode = document.createTextNode('');
         }
@@ -172,17 +172,23 @@ function prepareState(root, attrs, key, shared) {
         oldChild = el;
         states.el = newChild;
         reduced.childs.push([oldChild, newChild]);
-      } else if (confItem.type === 'class') {
+      break;
+      case 'class':
         if (fragment === undefined) {
           fragment = document.createDocumentFragment();
         }
-
         oldChild = el;
         newChild = fragment.cloneNode();
         states.el = oldChild;
         states.prevEl = newChild;
         states.isHidden = true;
         states.instance = shared[key].render().clone().render(newChild);
+      break;
+      case 'named':
+        states.el = el;
+        states.isHidden = false;
+        states.prevEl = document.createComment('');
+      break;
       }
       reduced.states.push(states);
     } else {
@@ -394,8 +400,19 @@ function setItem(key, value, _this) {
             togglePrevEl(item);
             item.isHidden = false;
           }
-        } else if (DEBUG) {
-          console.error('unsuported value type to set to subclass', key, value);
+        }
+      break;
+      case 'named':
+        if ([false, 0, '0', null].includes(value)) {
+          if (!item.isHidden) {
+            togglePrevEl(item);
+            item.isHidden = true;
+          }
+        } else if ([true, 1, '1'].includes(value)) {
+          if (item.isHidden) {
+            togglePrevEl(item);
+            item.isHidden = false;
+          }
         }
       break;
       }

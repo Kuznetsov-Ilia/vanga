@@ -75,10 +75,49 @@ function Parser(opts) {
     return pos;
     //return 'root.childNodes[' + pos.join('].childNodes[') + ']';
   };
+  parser.match$ = function(text) {
+    var match$ = text.match(/\$[\w\d]+/gi);
+    if (match$ && match$.length) {
+      return match$.reduce(replaceVars, text);
+    }
+    return text;
+  }
+  /*parser.explode2$ = function(text) {
+    return text.split(' ').filter(function(i){
+      return i !== '';
+    });
+  }
+  parser.explode$ = function(text) {
+    var match$ = text.match(/\$[\w\d]+/gi);
+    if (match$ && match$.length) {
 
+      return match$.reduce(explodeVars, [text]);
+    }
+    return text;
+  }*/
   this.parser = parser;
 }
-
+function replaceVars(str, match) {
+  return str.replace(match, '" + ' + match.slice(1) + ' + "');
+};
+function explodeVars(str, match) {
+  var smth = str[0].split(match);
+  var ind = smth.map(function(v, i, all){
+    if ((i === 0 || i === all.length) && v === '') {
+      return 1;
+    }
+    if (i > 0) {
+      var prevVal = all[i-1];
+      if (prevVal !== '' && v !== '') {
+        return 1;
+      }
+    }
+    return 0;
+  });
+  //console.log(ind);
+  return [match.slice(1)];
+  //return str.replace(match, '" + ' + match.slice(1) + ' + "');
+};
 Parser.prototype.write = function (xmlString, filepath) {
   this.parser.getEval = getEval(xmlString, this.parser, filepath);
   this.parser.getExpr = getExpr(xmlString, this.parser, filepath);

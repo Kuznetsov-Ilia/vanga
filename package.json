@@ -10,7 +10,9 @@
     }
   ],
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "babel-node test | faucet"
+  },
   "dependencies": {
     "through2": "*",
     "through": "*",
@@ -18,12 +20,17 @@
     "sax": "*"
   },
   "devDependencies": {
+    "babel": "*",
+    "faucet": "0.0.1",
     "gulp": "*",
     "gulp-beautify": "*",
     "gulp-eslint": "*",
     "gulp-mocha": "*",
     "gulp-rename": "*",
-    "gulp-spawn-shim": "*"
+    "gulp-spawn-shim": "*",
+    "jsdom": "^6.5.1",
+    "tap-nyan": "*",
+    "tape": "^4.2.0"
   },
   "repository": {
     "type": "git",
@@ -41,7 +48,17 @@
   },
   "homepage": "https://github.com/QiV/fest-dom-loader#readme",
   "browserify": {
-    "transform": [["babelify", {"extensions": ["", ".js", ".xml"]}]]
+    "transform": [
+      [
+        "babelify",
+        {
+          "extensions": [
+            "",
+            ".js",
+            ".xml"
+          ]
+        }
+      ]
+    ]
   }
-
 }

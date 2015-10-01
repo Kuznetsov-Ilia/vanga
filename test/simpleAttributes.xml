@@ -1,3 +1,25 @@
-<simpleAttrs export="default">
-  <a href="a {b} {c}{d}e" data-e="{e}"></a>
-</simpleAttrs>
+<MarkedButton export="default">
+  <button
+    class="mark {clear} action--{action} action--need-auth test2"
+    name="{clb}"
+    rel="nofollow"
+    type="button"
+    title="Нравится"
+    data-my="{my}"
+    data-type="{type}"
+    data-refid="{refid}"
+    data-state="{state}"
+    data-refname="{refname}"
+    data-canmark="{canmark}"
+    data-totalmarks="{totalmarks}">
+    <i class="icon i--like{iClassName}"></i>
+    <span class="totalmarks bold btn--text">
+      <Totalmarks bind="totalmarks" />
+    </span>
+    <span class="btn--text">Нравится</span>
+  </button>
+</MarkedButton>
+
+<Totalmarks>
+  <span class="totalmarks bold btn--text">{totalmarks}</span>
+</Totalmarks>
