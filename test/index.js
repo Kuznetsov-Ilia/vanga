@@ -1,8 +1,8 @@
-import { /*document, window,*/ body} from 'global';
+import { body} from 'global';
 import 'misc/polyfills';
 import 'misc/dom4';
 import it from 'tape';
-import '../build/importVars';
+//import '../build/importVars';
 it('should bind text', (t) => {
   t.plan(1);
   var { el, template } = load('../build/simpleText');
@@ -66,7 +66,6 @@ it('should bind component', (t) => {
   t.plan(1);
   var { el, template } = load('../build/simpleComponents');
   template.set('component1', true);
-  console.log(template.get('component1'));
   t.equal('I am an component 1!', el.querySelector('h1').textContent);
 });
 
@@ -75,7 +74,5 @@ function load(tmlpName) {
   var template = require(tmlpName);
   template.render(body);
   var el = body.childNodes[0];
-  return {
-    el, template
-  };
+  return { el, template };
 }
