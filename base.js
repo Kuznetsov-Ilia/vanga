@@ -216,30 +216,36 @@ function combineUpdates(result, up) {
     updateKey = result.el.push(up.el) - 1;
   }
 
-  result.updates[updateKey] = result.updates[updateKey] || {};
-  result.updates[updateKey].el = up.el;
+  //result.updates[updateKey] = result.updates[updateKey] || {};
+  var resUP = result.updates[updateKey] || {};
+  resUP.el = up.el;
   switch (up.type) {
   case 'html':
-    result.updates[updateKey].html = up.el;
+    resUP.html = up.el;
   break;
   case 'attr':
-    result.updates[updateKey].attr = result.updates[updateKey].attr || {};
-    result.updates[updateKey].attr[up.opts.attr] = up.opts.tmpl.join('');
+    resUP.attr = up.opts.reduce((acc, val) => {
+      acc[val.attrName] = val.tmpl.join('');
+      return acc;
+    }, resUP.attr || {});
+    //resUP.attr[up.opts.attr] = up.opts.tmpl.join('');
   break;
   case 'text':
-    result.updates[updateKey].text = up.value;
+    resUP.text = up.value;
   break;
   case 'map':
-    result.updates[updateKey].map = up;
+    resUP.map = up;
   break;
   }
-  result.prev[up.key] = up.value;
+
+  result.updates[updateKey] = resUP;
+  //result.prev[up.key] = up.value;
   return result;
 }
 
 function doUpdates(update) {
   if (update.attr) {
-    Object.keys(update.attr).forEach(key => {update.el.setAttribute(key, update.attr[key])});
+    Object.keys(update.attr).forEach(key => { update.el.setAttribute(key, update.attr[key]); });
   } else if (update.text) {
     update.el.nodeValue = update.text;
   } else if (update.html) {
@@ -321,11 +327,11 @@ function setItem(key, value, _this) {
           key: key,
           opts: _this.attrs
             .filter(a => key in a.keys)
-            .reduce((tmpl, attr) => ({
-                attr: attr.name,
-                tmpl: attr.keys[key].reduce((_tmpl, keyIndex) => {
-                  _tmpl[keyIndex] = value;
-                  return _tmpl;
+            .map(attr => ({
+                attrName: attr.name,
+                tmpl: attr.keys[key].reduce((acc2, keyIndex) => {
+                  acc2[keyIndex] = value;
+                  return acc2;
                 }, attr.tmpl)
               }), {})
         };

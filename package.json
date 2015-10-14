@@ -11,7 +11,8 @@
   ],
   "main": "index.js",
   "scripts": {
-    "test": "babel-node test | faucet"
+    "test": "babel-node test | faucet",
+    "test-bro": "browserify ./test/index.js > test/bundle.js"
   },
   "dependencies": {
     "through2": "*",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "babel": "*",
+    "babelify": "^6.3.0",
     "faucet": "0.0.1",
     "gulp": "*",
     "gulp-beautify": "*",
@@ -30,7 +32,8 @@
     "gulp-spawn-shim": "*",
     "jsdom": "^6.5.1",
     "tap-nyan": "*",
-    "tape": "^4.2.0"
+    "tape": "^4.2.0",
+    "testling": "^1.7.1"
   },
   "repository": {
     "type": "git",
@@ -53,9 +56,7 @@
         "babelify",
         {
           "extensions": [
-            "",
-            ".js",
-            ".xml"
+            ".js"
           ]
         }
       ]

@@ -20,7 +20,6 @@ module.exports = Parser;
 function Parser(opts) {
   var strict = true;// set to false for html-mode
   var options = {
-    //doLooseCase: false,
     strictEntities: true,
     normalize: true,
     trim: true,
@@ -34,7 +33,7 @@ function Parser(opts) {
   parser.oncdata = require('./events/oncdata');
   parser.ontext = require('./events/ontext');
   parser.onscript = require('./events/onscript');
-  //parser.onattribute = onattribute;
+
   parser.onend = require('./events/onend');
   parser.log = log;
 
@@ -45,7 +44,6 @@ function Parser(opts) {
 
   parser.festStack = [];
   parser.bindings = {};
- 
   parser.el = {};
   parser.attr = [];
   parser.elConf = {};

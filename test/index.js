@@ -1,20 +1,9 @@
-import {
-  jsdom
-}
-from 'jsdom';
+import { /*document, window,*/ body} from 'global';
+import 'misc/polyfills';
+import 'misc/dom4';
 import it from 'tape';
-import {
-  set
-}
-from 'global';
-var log = console.log;
-var document = jsdom('<html><body></body></html>');
-var window = document.defaultView;
-var body = document.body;
-set({ window, document, body});
-require('misc/dom4');
-
-it('should bind text', (t) => {
+import '../build/importVars';
+/*it('should bind text', (t) => {
   t.plan(1);
   var { el, template } = load('../build/simpleText');
   var expectedText = 'some text';
@@ -47,6 +36,32 @@ it('should bind attributes', (t) => {
   };
   template.set(values);
   t.equal(el.getAttribute('class'), 'mark  action--mark action--need-auth test2');
+});*/
+
+
+it('should import vars, vars in attr tmpl', t => {
+  t.plan(7);
+  var { el, template} = load('../build/importVars');
+  var v = {
+    somewhere: 'somewhere',
+    beginning: 'beginning',
+    the: 'the',
+    of: 'of',
+    at: 'at',
+    two: 'two',
+    vars: 'vars',
+    a: 'a'
+  };
+  var icon = require('./styles').icon;
+  template.set(v);
+  //t.equal(el.getAttribute('attr1'), icon + ' somewhere in the beginning');
+  t.equal(el.getAttribute('attr1'), `${icon} ${v.somewhere} in the beginning`);
+  t.equal(el.getAttribute('attr2'), `somewhere ${v.at} the end ${icon}`);
+  t.equal(el.getAttribute('attr3'), `${v.somewhere} ${icon} in ${v.the} middle`);
+  t.equal(el.getAttribute('attr4'), `${icon}-is ${v.a} part ${v.of} name in the ${v.beginning}`);
+  t.equal(el.getAttribute('attr5'), `is ${v.a} part ${v.of} name ${v.at} the end-${icon}`);
+  t.equal(el.getAttribute('attr6'), `is ${v.a} part ${v.of} name-${icon}-in ${v.the} middle`);
+  t.equal(el.children[0].getAttribute('attr1'), `inside parent between ${v.two}${icon}${v.vars}`);
 });
 /*it('should bind component', (t) => {
   t.plan(1);

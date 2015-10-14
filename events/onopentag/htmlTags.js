@@ -28,7 +28,6 @@ function compileAttributes(node, parser) {
   var n = 0;
   var attrsArray = [''];
 
-
   for (i in attrs) {
     var attrValue = attrs[i].value;
     if (i === 'as') {
@@ -66,11 +65,13 @@ function compileAttributes(node, parser) {
           attrArray.push(aa.attr);
         }
 
+        attrArray.map(parser.match$);
+
         //var isComplex = !(keys.length === 1 && attrValue === '{' + keys[0] + '}');
         var params = {
           keys: attrKeys,
           name: i,
-          tmpl: attrArray,
+          tmpl: attrArray.map(parser.match$),
           //isComplex: isComplex,
           path: node.path
         };

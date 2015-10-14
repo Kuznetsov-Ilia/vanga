@@ -1,0 +1,23 @@
+{
+  "name": "testing vanga",
+  "main": "index.js",
+  "browser": {
+    "global/document": "../node_modules/global/dist/bro.js",
+    "global/body": "../node_modules/global/dist/bro.js",
+    "global/window": "../node_modules/global/dist/bro.js",
+    "global/html": "../node_modules/global/dist/bro.js",
+    "global": "../node_modules/global/dist/bro.js"
+  },
+  "browserify": {
+    "transform": [
+      [
+        "babelify",
+        {
+          "extensions": [
+            ".js"
+          ]
+        }
+      ]
+    ]
+  }
+}

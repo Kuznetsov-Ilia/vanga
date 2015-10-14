@@ -37,7 +37,7 @@ module.exports = function(a, b, c) {
     .replace('__TemplatePath__', parser.opts.path)
     .replace('__IMPORTED_SHAREDS__', obj2str(shared))
     .replace('__IMPORTS__', importString)
-    .replace('__TEMPLATES__', parser.templates.join(';\n'))
+    .replace('__TEMPLATES__', parser.templates.join(';\n').replace(/\\\" \+/g, '" +').replace(/\+ \\\"/g, '+ "'))
     .replace('__EXPORTS__', exportString);
 
 }

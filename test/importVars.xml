@@ -1,0 +1,15 @@
+<import name="{icon}" from="../test/styles" />
+<WatchButton export="default">
+  <div
+    attr1="$icon {somewhere} in the beginning"
+    attr2="somewhere {at} the end $icon"
+    attr3="{somewhere} $icon in {the} middle"
+    attr4="$icon-is {a} part {of} name in the {beginning}"
+    attr5="is {a} part {of} name {at} the end-$icon"
+    attr6="is {a} part {of} name-$icon-in {the} middle"
+  >
+    <div
+      attr1="inside parent between {two}$icon{vars}"
+    ></div>
+  </div>
+</WatchButton>

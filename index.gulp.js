@@ -13,7 +13,7 @@ module.exports = function (options) {
       return callback();
     }
     if (file.isBuffer()) {
-      var parser = new Parser();
+      var parser = new Parser(options);
       var source = file.contents.toString('utf8');
       parser.write('<xml>' + source + '</xml>', file.path);
       file.contents = parser.getSource();
