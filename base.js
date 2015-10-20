@@ -270,20 +270,19 @@ function setItem(key, value, _this) {
         return {type: 'text', el: item.el, value: value, key: key};
       /*break;*/
       case 'attr':
+        var attr = _this.attrs[item.attr];
         return {
           type: 'attr',
           el: item.el,
           value: value,
           key: key,
-          opts: _this.attrs
-            .filter(a => key in a.keys)
-            .map(attr => ({
-              attrName: attr.name,
-              tmpl: attr.keys[key].reduce((acc2, keyIndex) => {
-                acc2[keyIndex] = value;
-                return acc2;
-              }, attr.tmpl)
-            }), {})
+          opts: {
+            attrName: attr.name,
+            tmpl: attr.keys[key].reduce((acc2, keyIndex) => {
+              acc2[keyIndex] = value;
+              return acc2;
+            }, attr.tmpl)
+          }
         };
       /*break;*/
       case 'html':
