@@ -1,9 +1,11 @@
 import { body} from 'global';
 import 'misc/polyfills';
-import 'misc/dom4';
+import 'misc/dom';
+//import 'misc/dom4';
 import it from 'tape';
-//import '../build/importVars';
-it('should bind text', (t) => {
+
+
+/*it('should bind text', (t) => {
   t.plan(1);
   var { el, template } = load('../build/simpleText');
   var expectedText = 'some text';
@@ -67,6 +69,15 @@ it('should bind component', (t) => {
   var { el, template } = load('../build/simpleComponents');
   template.set('component1', true);
   t.equal('I am an component 1!', el.querySelector('h1').textContent);
+});*/
+
+import '../build/multiVar';
+it('equal vars in different places', t => {
+  t.plan(1);
+  var { el, template } = load('../build/multiVar');
+  template.set('id', 224647246);
+  //console.error(el.outerHTML);
+  t.equal('published added', el.find('.published').attr('class'));
 });
 
 function load(tmlpName) {

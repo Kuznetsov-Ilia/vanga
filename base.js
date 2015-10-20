@@ -20,7 +20,6 @@ Object.assign(Template.prototype, {
   recursiveSet (key) {
     var _this = this;
     return Object.keys(key).reduce(set, []);
-
     function set (result, k) {
       return result.concat(_this.set(k, key[k], key));
     }
@@ -32,7 +31,7 @@ Object.assign(Template.prototype, {
         return this.recursiveSet(key);
       } else {
         this.pendingUpdates = true;
-        commit(this.recursiveSet(key)/*, this.prev*/);
+        commit(this.recursiveSet(key));
         this.pendingUpdates = false;
       }
     } else if (isObject(this.state.vars) && key in this.state.vars) {
@@ -41,35 +40,26 @@ Object.assign(Template.prototype, {
       if (isArray(state)) {
         updates = state.map(setter);
       } else {
-        debugger;
-        //updates = setter(conf);
+        throw {text: 'must be array', info: state};
       }
-      //checkBindings(state.instance, key, value);
       if (this.pendingUpdates || this.pendingBinds) {
         return updates;
       } else {
-        commit(updates/*, this.prev*/);
+        commit(updates);
       }
     } else {
-      //debugger;
-      //checkBindings(this, key, value);
-      //console.error('unknown key', key);
+      console.error('unknown key', key);
     }
-
-    //return this;
   },
 
   get (key) {
     var state = this.state.vars[key];
-    return state ? state[0].instance : false;
-    /*if (key in this.sub) {
-      return this.sub[key];
-      //if (this.type[key] === 'text') {
-        //return this.el[key];
-      //}
-    } else {
-      return console.error('unknown key', key);
-    }*/
+    if (state && state[0]) {
+      return state[0].instance || state[0];
+    }
+    else {
+      console.error('unknown key', key, 'in', this.state.vars);
+    }
   },
 
   getEl(key) {
@@ -78,28 +68,20 @@ Object.assign(Template.prototype, {
   },
 
   clone () {
-
     var clone = new Template(this.html, this.conf, this.attrs, this.shared, this.binded);
-    //var sub = this.sub;
-    //clone.sub = Object.keys(this.sub).reduce((clonedSub, key) => clonedSub[key] = sub[key].clone(), {});
     if (this.root) {
       clone.root = this.root.cloneNode(true);
     } else {
-      debugger;
+      throw {text: 'no root to clone', info: this};
     }
     return clone;
   },
 
   remove () {
-    /*if (0 && this.parent) {
-      this.parent.removeChild(this.root);
-    }*/
     if (isArray(this.root)) {
-      //var parent = this.root[0].parentNode;
-      //this.root.forEach(el => {parent.removeChild(el); });
       this.root.forEach(el => { el.remove(); });
     } else {
-      debugger;
+      throw {text: 'must be array', info: this.root};
     }
   },
 
@@ -113,7 +95,6 @@ Object.assign(Template.prototype, {
     }
     var conf = this.conf;
     var shared = this.shared;
-    //var sub = this.sub;
     var attrs = this.attrs;
     this.state.vars = Object.keys(conf).reduce((state, key) => {
       var a = conf[key].reduce(prepareState(root, attrs, key, shared), {childs: [], states: []});
@@ -132,18 +113,6 @@ Object.assign(Template.prototype, {
   }
 });
 
-/*function checkBindings(_this, key, value) {
-  if (key in _this.binded) {
-    var updates = _this.binded[key].map(setBindings(_this, key, value));
-    if (_this.pendingBinds || _this.pendingUpdates) {
-      return updates;
-    } else {
-      commit(updates);
-    }
-  }
-  return [];
-}
-*/
 function prepareState(root, attrs, key, shared) {
   return function(reduced, confItem) {
     var path;
@@ -157,13 +126,16 @@ function prepareState(root, attrs, key, shared) {
       var oldChild;
       var el = resolveEl(path, root);
       if (!el) {
-        debugger;
+        throw {text: 'no el resolved', info: confItem};
       }
       var states = {
         type: confItem.type,
         el: el
       };
       switch (confItem.type) {
+      case 'attr':
+        states.attr = confItem.attr;
+      break;
       case 'text':
         if (textNode === undefined) {
           textNode = document.createTextNode('');
@@ -192,7 +164,7 @@ function prepareState(root, attrs, key, shared) {
       }
       reduced.states.push(states);
     } else {
-      debugger;
+      throw {text: 'no path specified', info: confItem};
     }
     return reduced;
   };
@@ -202,7 +174,6 @@ function commit(updates) {
   var a = updates.reduce(combineUpdates, {el: [], updates: [], prev: {} });
   if (a && a.updates) {
     a.updates.map(doUpdates);
-    /*Object.assign(prev, a.prev);*/
   }
 }
 
@@ -216,7 +187,6 @@ function combineUpdates(result, up) {
     updateKey = result.el.push(up.el) - 1;
   }
 
-  //result.updates[updateKey] = result.updates[updateKey] || {};
   var resUP = result.updates[updateKey] || {};
   resUP.el = up.el;
   switch (up.type) {
@@ -228,7 +198,6 @@ function combineUpdates(result, up) {
       acc[val.attrName] = val.tmpl.join('');
       return acc;
     }, resUP.attr || {});
-    //resUP.attr[up.opts.attr] = up.opts.tmpl.join('');
   break;
   case 'text':
     resUP.text = up.value;
@@ -239,7 +208,6 @@ function combineUpdates(result, up) {
   }
 
   result.updates[updateKey] = resUP;
-  //result.prev[up.key] = up.value;
   return result;
 }
 
@@ -255,27 +223,9 @@ function doUpdates(update) {
   } else if (update.map) {
     //
   } else if (update.el === undefined) {
-  } else debugger;
-}
-
-function setBindings(_this, key, value) {
-  return function(_subName) {
-    var keyToBind;
-    var subName;
-    if (isString(_subName)) {
-      subName = _subName;
-      keyToBind = key;
-    } else if (isArray(_subName)) {
-      subName = _subName[0];
-      keyToBind = _subName[1];
-    }
-    var bindedValue = {};
-    bindedValue[keyToBind] = value;
-    _this.pendingBinds = true;
-    var updates = _this.set(subName, bindedValue);
-    _this.pendingBinds = false;
-    return updates;
-  };
+  } else {
+    throw {text: 'unhandled case', info: update};
+  }
 }
 
 function replaceChildren(i) {
@@ -328,12 +278,12 @@ function setItem(key, value, _this) {
           opts: _this.attrs
             .filter(a => key in a.keys)
             .map(attr => ({
-                attrName: attr.name,
-                tmpl: attr.keys[key].reduce((acc2, keyIndex) => {
-                  acc2[keyIndex] = value;
-                  return acc2;
-                }, attr.tmpl)
-              }), {})
+              attrName: attr.name,
+              tmpl: attr.keys[key].reduce((acc2, keyIndex) => {
+                acc2[keyIndex] = value;
+                return acc2;
+              }, attr.tmpl)
+            }), {})
         };
       /*break;*/
       case 'html':
@@ -371,31 +321,16 @@ function setItem(key, value, _this) {
             } else {
               targetNode = item.el;
             }
-
-            //var newRoots = Array.from(item.f.childNodes).map(child => child);
-            //targetNode.parentNode.insertBefore(item.f, null);
             targetNode.parentNode.append(item.f);
-
-            //var l = newRoots.length;
-            //while (--l) {
-             // newRoots[l]
-            //}
           } else {
             item.instance.set(value[0]);
           }
-
         } else if (isObject(value)) {
           if (item.isHidden) {
             togglePrevEl(item);
             item.isHidden = false;
           }
           item.instance.set(value);
-          //if (item.instance) {
-            //debugger;
-            //console.log('checkBindings', key, value, item.instance.bindings);
-            //checkBindings(item.instance, key, value);
-          //}
-          //_this.sub[key].set(value);
         } else if ([false, 0, '0', null].includes(value)) {
           if (!item.isHidden) {
             togglePrevEl(item);
@@ -422,17 +357,11 @@ function setItem(key, value, _this) {
         }
       break;
       }
-    } else {
-      //debugger;
-      //console.log('TODO: caching system for complex & multiple updates');
-      /*if (value !== undefined) {
-        console.log('not changed', key, value, item.prevValue);
-      }*/
     }
   };
 }
 function togglePrevEl(item) {
-  var newChild = item.prevEl;/* || commentNode.cloneNode()*/
+  var newChild = item.prevEl;
   var oldChild = item.el;
   var newRoot;
 
@@ -440,19 +369,15 @@ function togglePrevEl(item) {
     if (newChild.childNodes.length === 1) {
       newRoot = newChild.childNodes[0];
     } else {
-      newRoot = newChild.childNodes.slice(0);//.map(child => child);
+      newRoot = newChild.childNodes.slice(0);
     }
   }
-  //var newRoot = newChild.childNodes;
   if (isArray(oldChild)) {
     var lastChild = oldChild.pop();
-    //var parentChild = lastChild.parentNode;
     lastChild.replaceWith(newChild);
-    //parentChild.replaceChild(newChild, lastChild);
     oldChild.forEach(child => { child.remove(); } );
   } else {
     oldChild.replaceWith(newChild);
-    //oldChild.parentNode.replaceChild(newChild, oldChild);
   }
   if (isFragment(newChild)) {
     newChild = newRoot;
@@ -488,7 +413,6 @@ function doClonedStaff(item, value) {
     }
     var f = fragment.cloneNode();
     var toBeCloned = item.instance;
-    //item.clones.reduce(c => (f.appendChild(c.root.cloneNode(true)), f), f);
     for (var i = clonLength; i <= valLength; i++) {
       var clone = toBeCloned.clone().render(f);
       item.clones.push(clone);
@@ -496,4 +420,3 @@ function doClonedStaff(item, value) {
     item.f = f;
   }
 }
-
