@@ -1,9 +1,9 @@
-var template;
-var div;
-var fragment;
-var textNode;
+var TEMPLATE;
+var DIV;
+var FRAGMENT;
+var TEXTNODE;
 import {document} from 'global';
-import {isObject, isArray, isString, isFragment} from 'misc/utils';
+import {isObject, isArray, isFragment} from 'misc/utils';
 export default Template;
 function Template(html, conf, attrs, shared, binded) {
   this.html = html;
@@ -34,9 +34,9 @@ Object.assign(Template.prototype, {
         commit(this.recursiveSet(key));
         this.pendingUpdates = false;
       }
-    } else if (isObject(this.state.vars) && key in this.state.vars) {
-      var state = this.state.vars[key];
-      var setter = setItem(key, value, this);
+    } else if (isObject(this.state) && key in this.state) {
+      var state = this.state[key];
+      var setter = setState(key, value, this);
       if (isArray(state)) {
         updates = state.map(setter);
       } else {
@@ -53,17 +53,17 @@ Object.assign(Template.prototype, {
   },
 
   get (key) {
-    var state = this.state.vars[key];
+    var state = this.state[key];
     if (state && state[0]) {
-      return state[0].instance || state[0];
+      return state[0].template || state[0];
     }
     else {
-      console.error('unknown key', key, 'in', this.state.vars);
+      console.error('unknown key', key, 'in', this.state);
     }
   },
 
   getEl(key) {
-    var state = this.state.vars[key];
+    var state = this.state[key];
     return state ? state[0].el : false;
   },
 
@@ -78,15 +78,25 @@ Object.assign(Template.prototype, {
   },
 
   remove () {
-    if (isArray(this.root)) {
+    if (isArray(this.root)) {// removing unused clones
       this.root.forEach(el => { el.remove(); });
-    } else {
-      throw {text: 'must be array', info: this.root};
+    } else { // removing explicitly outside
+      if (this.parent) {
+        this.parent.childNodes.forEach(el => { el.remove(); });
+      } else if (this.el) {
+        this.el.remove();
+      }
     }
+    this.isRemoved = true;
   },
 
   render(rootToBeRenderedTo) {
     if (this.isRendered) {
+      if (this.isRemoved) {
+        this.parent.appendChild(this.el);
+        this.el = this.parent.lastChild;
+        this.isRemoved = false;
+      }
       return this;
     }
     var root = this.root;
@@ -96,17 +106,27 @@ Object.assign(Template.prototype, {
     var conf = this.conf;
     var shared = this.shared;
     var attrs = this.attrs;
-    this.state.vars = Object.keys(conf).reduce((state, key) => {
-      var a = conf[key].reduce(prepareState(root, attrs, key, shared), {childs: [], states: []});
-      a.childs.forEach(replaceChildren);
-      state[key] = a.states;
+    this.state = Object.keys(conf).reduce((state, key) => {
+      var {childs, states} = conf[key].reduce(
+        prepareState(root, attrs, key, shared),
+        {childs: [], states: []}
+      );
+      childs.forEach(replaceChildren);
+      state[key] = states;
       return state;
     }, {});
     if (rootToBeRenderedTo) {
       var back = root.cloneNode(true);
-      rootToBeRenderedTo.appendChild(root);
+      if ([Node.TEXT_NODE, Node.COMMENT_NODE].includes(rootToBeRenderedTo.nodeType)) {
+        this.el = root.lastChild;
+        rootToBeRenderedTo.replaceWith(root);
+        this.parent = root.parentNode;
+      } else {
+        rootToBeRenderedTo.appendChild(root);
+        this.el = rootToBeRenderedTo.lastChild;
+        this.parent = rootToBeRenderedTo;
+      }
       this.root = back;
-      this.parent = rootToBeRenderedTo;
     }
     this.isRendered = true;
     return this;
@@ -128,41 +148,50 @@ function prepareState(root, attrs, key, shared) {
       if (!el) {
         throw {text: 'no el resolved', info: confItem};
       }
-      var states = {
+      var state = {
         type: confItem.type,
         el: el
       };
       switch (confItem.type) {
       case 'attr':
-        states.attr = confItem.attr;
+        state.attr = confItem.attr;
       break;
       case 'text':
-        if (textNode === undefined) {
-          textNode = document.createTextNode('');
+        if (TEXTNODE === undefined) {
+          TEXTNODE = document.createTextNode('');
         }
-        newChild = textNode.cloneNode();
+        newChild = TEXTNODE.cloneNode();
         oldChild = el;
-        states.el = newChild;
+        state.el = newChild;
         reduced.childs.push([oldChild, newChild]);
       break;
       case 'class':
-        if (fragment === undefined) {
-          fragment = document.createDocumentFragment();
+        if (FRAGMENT === undefined) {
+          FRAGMENT = document.createDocumentFragment();
         }
         oldChild = el;
-        newChild = fragment.cloneNode();
-        states.el = oldChild;
-        states.prevEl = newChild;
-        states.isHidden = true;
-        states.instance = shared[key].render().clone().render(newChild);
+        newChild = FRAGMENT.cloneNode();
+        state.el = oldChild;
+        state.prevEl = newChild;
+        state.isHidden = true;
+        if (shared[key] !== undefined) {
+          //if (shared[key] instanceof Template) {
+            state.template = shared[key].render().clone().render(newChild);
+          /*} else {
+            state.template = shared[key];
+            state.isHidden = false;
+          }*/
+        } else {
+          throw {text: key + ' is not defined', info: {shared, key}};
+        }
       break;
       case 'named':
-        states.el = el;
-        states.isHidden = false;
-        states.prevEl = document.createComment('');
+        state.el = el;
+        state.isHidden = false;
+        state.prevEl = document.createComment('');
       break;
       }
-      reduced.states.push(states);
+      reduced.states.push(state);
     } else {
       throw {text: 'no path specified', info: confItem};
     }
@@ -194,15 +223,14 @@ function combineUpdates(result, up) {
     resUP.html = up.el;
   break;
   case 'attr':
-    resUP.attr = up.opts.reduce((acc, val) => {
-      acc[val.attrName] = val.tmpl.join('');
-      return acc;
-    }, resUP.attr || {});
+    resUP.attr = resUP.attr || {};
+    resUP.attr[up.opts.attrName] = up.opts.tmpl.join('');
   break;
   case 'text':
     resUP.text = up.value;
   break;
   case 'map':
+    debugger;
     resUP.map = up;
   break;
   }
@@ -214,12 +242,13 @@ function combineUpdates(result, up) {
 function doUpdates(update) {
   if (update.attr) {
     Object.keys(update.attr).forEach(key => { update.el.setAttribute(key, update.attr[key]); });
-  } else if (update.text) {
+  } else if ('text' in update) {
     update.el.nodeValue = update.text;
-  } else if (update.html) {
-    var oldChild = update.html[0];
+  } else if ('html' in update) {
+    replaceChildren(update.html);
+    /*var oldChild = update.html[0];
     var newChild = update.html[1];
-    oldChild.replaceWith(newChild);
+    oldChild.replaceWith(newChild);*/
   } else if (update.map) {
     //
   } else if (update.el === undefined) {
@@ -242,18 +271,18 @@ function gotoChild(root, index) {
 }
 
 function loadWithIframe (strHTML) {
-  if (template === undefined) {
-    template = document.createElement('template');
+  if (TEMPLATE === undefined) {
+    TEMPLATE = document.createElement('template');
   }
-  var root = template.cloneNode();
+  var root = TEMPLATE.cloneNode();
   root.innerHTML = strHTML;
   return root.content || templateFallback(root);
 }
 function templateFallback(root) {
-  if (fragment === undefined) {
-    fragment = document.createDocumentFragment();
+  if (FRAGMENT === undefined) {
+    FRAGMENT = document.createDocumentFragment();
   }
-  var f = fragment.cloneNode(false);
+  var f = FRAGMENT.cloneNode(false);
   var child;
   while (child = root.firstElementChild) {
     f.appendChild(child);
@@ -261,19 +290,18 @@ function templateFallback(root) {
   return f;
 }
 
-function setItem(key, value, _this) {
-  return function (item) {
-    if (item.prevValue !== value) {
-      item.prevValue = value;
-      switch (item.type) {
+function setState(key, value, _this) {
+  return function (state) {
+    if (state.prevValue !== value) {
+      state.prevValue = value;
+      switch (state.type) {
       case 'text':
-        return {type: 'text', el: item.el, value: value, key: key};
-      /*break;*/
+        return {type: 'text', el: state.el, value: value, key: key};
       case 'attr':
-        var attr = _this.attrs[item.attr];
+        var attr = _this.attrs[state.attr];
         return {
           type: 'attr',
-          el: item.el,
+          el: state.el,
           value: value,
           key: key,
           opts: {
@@ -284,84 +312,91 @@ function setItem(key, value, _this) {
             }, attr.tmpl)
           }
         };
-      /*break;*/
       case 'html':
-        if (div === undefined) {
-          div = document.createElement('div');
-          div.className = 'base-wrapper';
+        if (DIV === undefined) {
+          DIV = document.createElement('div');
+          DIV.className = 'base-wrapper';
         }
-        var newChild = div.cloneNode();
-        var oldChild = item.el;
+        var newChild = DIV.cloneNode();
+        var oldChild = state.el;
         newChild.innerHTML = value;
-        item.el = newChild;
+        state.el = newChild;
         return {
           type: 'html',
           el: [oldChild, newChild],
           key: key,
           value: value
         };
-      /*break;*/
       case 'class':
         if (isArray(value)) {
-          if (item.isHidden) {
-            togglePrevEl(item);
-            item.isHidden = false;
-          }
+          show(state);
           if (value.length > 1) {
-            if (item.clones) {
-              doClonedStaff(item, value);
+            if (state.clones) {
+              doClonedStaff(state, value);
             } else {
-              makeClones(item, value.length, item.instance);
+              makeClones(state, value.length, state.template);
             }
-            value.forEach((v, i) => { item.clones[i].set(v); });
+            value.forEach((v, i) => {
+              var clone = state.clones[i];
+              if (isArray(v)) {
+                console.error('dont know how to set array');
+              } else if (isObject(v)) {
+                clone.set(v);
+              } else if (hidable(v)) {
+                hide(clone);
+              } else if (showable(v)) {
+                show(clone);
+              }
+            });
             var targetNode;
-            if (item.el.length) {
-              targetNode = item.el[item.el.length - 1];
+            if (isArray(state.el) && state.el.length) {// Comment.lenght!!!
+              if (state.template.el.parentNode !== null) {
+                targetNode = state.template.el;
+              } else if (state.el.slice(0, 1).parentNode !== null) {
+                targetNode = state.el.slice(0, 1);
+              } else if (state.el[0].parentNode !== null) {
+                targetNode = state.el[0];
+              }
             } else {
-              targetNode = item.el;
+              targetNode = state.el;
             }
-            targetNode.parentNode.append(item.f);
+            if (targetNode) {
+              targetNode.after(state.fragment);
+              //debugger;
+              //targetNode.parentNode.append(state.fragment);
+            } else {
+              debugger;
+              //state.template.el.parentNode.append(state.fragment);
+            }
           } else {
-            item.instance.set(value[0]);
+            state.template.set(value[0]);
           }
         } else if (isObject(value)) {
-          if (item.isHidden) {
-            togglePrevEl(item);
-            item.isHidden = false;
-          }
-          item.instance.set(value);
-        } else if ([false, 0, '0', null].includes(value)) {
-          if (!item.isHidden) {
-            togglePrevEl(item);
-            item.isHidden = true;
-          }
-        } else if ([true, 1, '1'].includes(value)) {
-          if (item.isHidden) {
-            togglePrevEl(item);
-            item.isHidden = false;
-          }
+          show(state);
+          state.template.set(value);
+        } else if (hidable(value)) {
+          hide(state);
+        } else if (showable(value)) {
+          show(state);
         }
       break;
       case 'named':
-        if ([false, 0, '0', null].includes(value)) {
-          if (!item.isHidden) {
-            togglePrevEl(item);
-            item.isHidden = true;
-          }
-        } else if ([true, 1, '1'].includes(value)) {
-          if (item.isHidden) {
-            togglePrevEl(item);
-            item.isHidden = false;
-          }
+        if (hidable(value)) {
+          hide(state);
+        } else if (showable(value)) {
+          show(state);
         }
       break;
       }
     }
   };
 }
-function togglePrevEl(item) {
-  var newChild = item.prevEl;
-  var oldChild = item.el;
+function togglePrevEl(state) {
+  if (TEXTNODE === undefined) {
+    TEXTNODE = document.createTextNode('');
+  }
+  var newChild = state.prevEl || TEXTNODE.cloneNode();
+  var oldChild = state.el;
   var newRoot;
 
   if (isFragment(newChild)) {
@@ -381,41 +416,59 @@ function togglePrevEl(item) {
   if (isFragment(newChild)) {
     newChild = newRoot;
   }
-  item.el = newChild;
-  item.prevEl = oldChild;
+  state.el = newChild;
+  state.prevEl = oldChild;
 }
 
-function makeClones(item, valLength, toBeCloned) {
-  if (fragment === undefined) {
-    fragment = document.createDocumentFragment();
+function makeClones(state, valLength, toBeCloned) {
+  if (FRAGMENT === undefined) {
+    FRAGMENT = document.createDocumentFragment();
   }
-  var f = fragment.cloneNode();
+  var fragment = FRAGMENT.cloneNode();
   var k = toBeCloned.root.childNodes.length;
-  item.clones = [toBeCloned];
+  state.clones = [toBeCloned];
   for (var i = 1; i < valLength; i++) {
-    var clone = toBeCloned.clone();
-    clone.render(f);
-    clone.root = f.childNodes.slice((i - 1) * k);//
-    item.clones.push(clone);
+    var clone = toBeCloned.clone().render(fragment);
+    clone.root = fragment.childNodes.slice((i - 1) * k);//
+    state.clones.push(clone);
   }
-  item.f = f;
+  state.fragment = fragment;
 }
 
-function doClonedStaff(item, value) {
+function doClonedStaff(state, value) {
   var valLength = value.length;
-  var clonLength = item.clones.length;
+  var clonLength = state.clones.length;
   if (clonLength > valLength) {
-    item.clones.slice(valLength).forEach(tmpl => { tmpl.remove(); tmpl = null; });
+    state.clones.slice(valLength).forEach(tmpl => { tmpl.remove(); tmpl = null; });
   } else if (clonLength < valLength) {
-    if (fragment === undefined) {
-      fragment = document.createDocumentFragment();
+    if (FRAGMENT === undefined) {
+      FRAGMENT = document.createDocumentFragment();
     }
-    var f = fragment.cloneNode();
-    var toBeCloned = item.instance;
+    var fragment = FRAGMENT.cloneNode();
+    var toBeCloned = state.template;
     for (var i = clonLength; i <= valLength; i++) {
-      var clone = toBeCloned.clone().render(f);
-      item.clones.push(clone);
+      var clone = toBeCloned.clone().render(fragment);
+      state.clones.push(clone);
     }
-    item.f = f;
+    state.fragment = fragment;
+  }
+}
+
+function hidable(value){
+  return [false, 0, '0', null].includes(value);
+}
+function hide(state) {
+  if (!state.isHidden) {
+    togglePrevEl(state);
+    state.isHidden = true;
+  }
+}
+function showable(value){
+  return [true, 1, '1'].includes(value);
+}
+function show(state) {
+  if (state.isHidden) {
+    togglePrevEl(state);
+    state.isHidden = false;
   }
 }

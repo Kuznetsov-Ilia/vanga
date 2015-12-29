@@ -169,7 +169,7 @@ module.exports = function(node, parser){
     return;
   
   case 'import':
-    if (node.attributes.name) {
+    if (node.attributes.name && node.attributes.from) {
       var name = parser.getAttr(node, 'name');
       var from = parser.getAttr(node, 'from');
       parser.imports[name] = from;
@@ -181,6 +181,9 @@ module.exports = function(node, parser){
         }
       }
       extend(parser.imports, imports);*/
+    } else if (node.attributes.from) {
+      var from = parser.getAttr(node, 'from');
+      parser.importsFrom.push(from);
     }
     return;
   

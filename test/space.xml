@@ -1,0 +1,15 @@
+<SpaceTest export="default">
+  К оплате<space /><b>{sum} Рублей</b>
+</SpaceTest>
+
+<OO>
+  <div class="$actions">
+    <b as="edit">Изменить</b>
+    <space />
+    или
+    <space />
+    <b as="cancel">Отменить</b>
+    <space />
+    заказ
+  </div>
+</OO>

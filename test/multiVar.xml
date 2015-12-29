@@ -1,5 +1,5 @@
 <Answer export="default">
   <div class="{id} {b}" attr1="{b} -{id}-">
-    <a href="/answer/{id}" class="{c}published"></a>
+    <a href="/answer/{id}" class="{c} published {id}"></a>
   </div>
 </Answer>

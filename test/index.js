@@ -4,8 +4,8 @@ import 'misc/dom';
 //import 'misc/dom4';
 import it from 'tape';
 
-
-/*it('should bind text', (t) => {
+/*
+it('should bind text', (t) => {
   t.plan(1);
   var { el, template } = load('../build/simpleText');
   var expectedText = 'some text';
@@ -69,21 +69,52 @@ it('should bind component', (t) => {
   var { el, template } = load('../build/simpleComponents');
   template.set('component1', true);
   t.equal('I am an component 1!', el.querySelector('h1').textContent);
-});*/
+});
 
-import '../build/multiVar';
+//import '../build/multiVar';
 it('equal vars in different places', t => {
   t.plan(1);
   var { el, template } = load('../build/multiVar');
-  template.set('id', 224647246);
-  //console.error(el.outerHTML);
-  t.equal('published added', el.find('.published').attr('class'));
+  var values = {
+    id: 224647246,
+    b: 'b',
+    c: 'c'
+  };
+  template.set(values);
+  t.equal(`${values.c} published ${values.id}`, el.find('.published').attr('class'));
+});*/
+
+//import '../build/complexClasses';
+it('complexClasses', t => {
+  t.plan(8);
+  var { template } = load('../build/complexClasses');
+  var values = {t2: [0, 0]};
+  template.set(values);
+  t.equal(true, body.childNodes[0] instanceof Text);
+  t.equal(true, body.childNodes[1] instanceof Text);
+  values = {t2: [0, 1]};
+  template.set(values);
+  t.equal(true, body.childNodes[0] instanceof Text);
+  t.equal(true, body.childNodes[1] instanceof HTMLAnchorElement);
+  values = {t2: [1, 0]};
+  template.set(values);
+  t.equal(true, body.childNodes[0] instanceof HTMLAnchorElement);
+  t.equal(true, body.childNodes[1] instanceof Text);
+  values = {t2: [1, 1]};
+  template.set(values);
+  t.equal(true, body.childNodes[0] instanceof HTMLAnchorElement);
+  t.equal(true, body.childNodes[1] instanceof HTMLAnchorElement);
 });
 
 function load(tmlpName) {
   body.innerHTML = '';
   var template = require(tmlpName);
-  template.render(body);
+  try {
+    template.render(body);
+  } catch (e) {
+    console.error(body.childNodes.length);
+    console.error(JSON.stringify(e));
+  }
   var el = body.childNodes[0];
   return { el, template };
 }

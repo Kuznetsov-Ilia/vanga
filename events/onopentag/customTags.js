@@ -11,10 +11,6 @@ module.exports = function(node, parser) {
     if (node.attributes.if) {
       condition = parser.getAttr(node, 'if');
     }
-    
-   
-
-    
     var elConf = {
       path: node.path,
       type: 'class',
@@ -33,7 +29,7 @@ module.exports = function(node, parser) {
     parser.elConf[key].push(elConf);
     parser.source.push('"<!--' + node.name + '-->"');
   } else {
-    node.siblings = -1;
+    node.siblings = 0;
     node.path = [];
   }
 };

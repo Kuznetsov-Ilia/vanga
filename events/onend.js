@@ -3,7 +3,7 @@ var fs = require('fs');
 var tmpl = path.join(__dirname, '../', 'tmpl.js');
 
 // parser stream is done, and ready to have more stuff written to it.
-module.exports = function(a, b, c) {
+module.exports = function() {
   var parser = this;
   var shared = Object.keys(parser.imports).reduce(function(s, import_name) {
     if (import_name[0] === '{') {
@@ -19,9 +19,11 @@ module.exports = function(a, b, c) {
     }
     return s;
   }, {});
-  var importString = Object.keys(parser.imports).map(function(import_name) {
-    return ['import ', import_name, ' from "', parser.imports[import_name], '"'].join('');
-  }).join(';\n');
+  var importString = Object.keys(parser.imports)
+    .map(i => `import ${i} from "${parser.imports[i]}"`)
+    .concat(parser.importsFrom.map(i => `import '${i}'`))
+    .join(';\n');
+
   var exportString = '';
   if (parser.exports.length) {
     exportString = 'export {' + parser.exports.join(',') + '};\n';
@@ -40,7 +42,7 @@ module.exports = function(a, b, c) {
     .replace('__TEMPLATES__', parser.templates.join(';\n').replace(/\\\" \+/g, '" +').replace(/\+ \\\"/g, '+ "'))
     .replace('__EXPORTS__', exportString);
 
-}
+};
 
 
 function obj2str(obj){

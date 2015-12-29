@@ -13,7 +13,14 @@ module.exports = function(node, parser) {
 
 function getClassStr (node, parser) {
   var name = node.name;
-  var html = (parser.source.join('+') || '""').replace(/"\+"/g, '');
+  var html;
+  if (parser.source.length) {
+    parser.source.unshift(`"<${name}>"`);
+    parser.source.push(`"</${name}>"`);
+    html = parser.source.join('+').replace(/"\+"/g, '');
+  } else {
+    html = '""';
+  }
   var conf = JSON.stringify(parser.elConf);
   var attr = JSON.stringify(parser.attr) || '[]';
   var bindings = JSON.stringify(parser.bindings);

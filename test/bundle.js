@@ -35,7 +35,7 @@ var ETp = _global.window.EventTarget && _global.window.EventTarget.prototype;
 var CACHE = {};
 var CACHE_KEY = 0;
 var ES5ArrayMethods = ['join', 'split', 'concat', 'pop', 'push', 'shift', 'unshift', 'reverse', 'slice', 'splice', 'sort', 'indexOf', 'lastIndexOf', //ES3
-'some', 'every', /*'find', 'filter',*/'map', 'reduce', 'reduceRight' //ES5
+'forEach', 'some', 'every', /*'find', 'filter',*/'map', 'reduce', 'reduceRight' //ES5
 ].reduce(function (acc, value) {
   acc[value] = { value: Ap[value] };
   return acc;
@@ -53,9 +53,12 @@ var listMethods = _utils.keys(CustomMethods).reduce(function (acc, value) {
   acc[value] = { value: CustomMethods[value] };
   return acc;
 }, ES5ArrayMethods);
-var matches = Ep.matchesSelector || Ep.webkitMatchesSelector || Ep.khtmlMatchesSelector || Ep.mozMatchesSelector || Ep.msMatchesSelector || Ep.oMatchesSelector || function (selector) {
-  var parentNode = this.parentNode;
-  return !!parentNode && parentNode.querySelectorAll(selector).contains(this);
+var matches = Ep.matches || Ep.matchesSelector || Ep.webkitMatchesSelector || Ep.khtmlMatchesSelector || Ep.mozMatchesSelector || Ep.msMatchesSelector || Ep.oMatchesSelector || function (selector) {
+  var _this2 = this;
+
+  return _global.document.filter(selector).some(function (e) {
+    return e === _this2;
+  });
 };
 
 var NodeMethods = {
@@ -85,6 +88,9 @@ var nodeMethods = _utils.keys(NodeMethods).reduce(function (acc, key) {
   return acc;
 }, {});
 
+_global.document.matches = function (selector) {
+  return _global.body.matches(selector);
+};
 Object.defineProperties(NLp, listMethods);
 Object.defineProperties(HCp, listMethods);
 Object.defineProperties(Np, nodeMethods);
@@ -186,9 +192,49 @@ function find(selector, flag) {
 function filter(selector) {
   return this.querySelectorAll(selector || '☺') || [];
 }
-function delegate(selector, handler) {
+
+/* Traverse DOM from event target up to parent, searching for selector */
+function passedThrough(event, selector, stopAt) {
+  var currentNode = event.target;
+  while (true) {
+    if (currentNode.matches(selector)) {
+      return currentNode;
+    } else if (currentNode !== stopAt && currentNode !== _global.body) {
+      currentNode = currentNode.parentNode;
+    } else {
+      return false;
+    }
+  }
+}
+function delegate(delegationSelector, handler) {
   return function (event) {
-    if (event.target.matches(selector)) {
+    var found = passedThrough(event, delegationSelector, event.currentTarget);
+    if (found) {
+      // Execute the callback with the context set to the found element
+      // jQuery goes way further, it even has it's own event object
+      handler.call(found, event);
+    }
+
+    /*var target = event.target;
+    var related = event.relatedTarget;
+    var match = false;
+     // search for a parent node matching the delegation selector
+    while ( target && target !== document && !(match = target.matches(delegationSelector)) ) {
+      target = target.parentNode;
+    }
+    // exit if no matching node has been found
+    if ( !match ) { return; }
+    // loop through the parent of the related target to make sure that it's not a child of the target
+    while (related && related !== target && related !== document ) {
+      related = related.parentNode;
+    }
+    // exit if this is the case
+    if ( related === target ) { return; }
+     // the "delegated mouseenter" handler can now be executed
+    // change the color of the text
+    handler(event);*/
+
+    /*if (event.target.matches(selector)) {
       return handler(event);
     } else if (event.target.matches(selector + ' *')) {
       var target = event.target.parent(selector);
@@ -196,13 +242,14 @@ function delegate(selector, handler) {
         target: target,
         realTarget: event.target
       };
-      ['initMouseEvent', 'initUIEvent', 'initEvent', 'preventDefault', 'stopImmediatePropagation', 'stopPropagation'].forEach(function (e) {
+      ['initMouseEvent', 'initUIEvent', 'initEvent', 'preventDefault', 'stopImmediatePropagation', 'stopPropagation']
+      .forEach(e => {
         if (e in event) {
           pseudoEvent[e] = event[e].bind(event);
         }
       });
       return handler(Object.assign({}, event, pseudoEvent));
-    }
+    }*/
   };
 }
 
@@ -548,7 +595,7 @@ function replaceWith(html) {
     } else if (_utils.isNode(html)) {
       parentNode.replaceChild(html, this);
     } else {
-      console.error('unsuported input type', html);
+      console.error('unsuported input type in replaceWith', typeof html, html);
     }
   }
   return this;
@@ -559,7 +606,7 @@ function css(ruleName, value) {
     for (var ii in ruleName) {
       el.style[camelCase(ii)] = ruleName[ii];
     }
-    return ruleName;
+    return el;
   } else if (_utils.isset(ruleName)) {
     if (_utils.isset(value)) {
       el.style[camelCase(ruleName)] = value;
@@ -568,7 +615,6 @@ function css(ruleName, value) {
       return _global.window.getComputedStyle(el, null)[camelCase(ruleName)];
     }
   }
-  return '';
 }
 function data(key, value) {
   var el = this;
@@ -679,6 +725,7 @@ if (!arrayProto.includes) {
     value: has
   };
 }
+arrayProps.matches = { value: has };
 arrayProps.contains = { value: has };
 arrayProps.has = { value: has };
 
@@ -703,6 +750,7 @@ if (!Array.from) {
 if (!stringProto.includes) {
   stringProto.includes = has;
 }
+stringProps.matches = { value: has };
 stringProps.contains = { value: has };
 stringProps.has = { value: has };
 
@@ -1063,10 +1111,10 @@ var _global = require('global');
 
 var _miscUtils = require('misc/utils');
 
-var template;
-var div;
-var fragment;
-var textNode;
+var TEMPLATE;
+var DIV;
+var FRAGMENT;
+var TEXTNODE;
 exports['default'] = Template;
 
 function Template(html, conf, attrs, shared, binded) {
@@ -1098,9 +1146,9 @@ Object.assign(Template.prototype, {
         commit(this.recursiveSet(key));
         this.pendingUpdates = false;
       }
-    } else if (_miscUtils.isObject(this.state.vars) && key in this.state.vars) {
-      var state = this.state.vars[key];
-      var setter = setItem(key, value, this);
+    } else if (_miscUtils.isObject(this.state) && key in this.state) {
+      var state = this.state[key];
+      var setter = setState(key, value, this);
       if (_miscUtils.isArray(state)) {
         updates = state.map(setter);
       } else {
@@ -1117,16 +1165,16 @@ Object.assign(Template.prototype, {
   },
 
   get: function get(key) {
-    var state = this.state.vars[key];
+    var state = this.state[key];
     if (state && state[0]) {
-      return state[0].instance || state[0];
+      return state[0].template || state[0];
     } else {
-      console.error('unknown key', key, 'in', this.state.vars);
+      console.error('unknown key', key, 'in', this.state);
     }
   },
 
   getEl: function getEl(key) {
-    var state = this.state.vars[key];
+    var state = this.state[key];
     return state ? state[0].el : false;
   },
 
@@ -1142,16 +1190,26 @@ Object.assign(Template.prototype, {
 
   remove: function remove() {
     if (_miscUtils.isArray(this.root)) {
+      // removing unused clones
       this.root.forEach(function (el) {
         el.remove();
       });
+      this.isRemoved = true;
     } else {
-      throw { text: 'must be array', info: this.root };
+      // removing explicitly outside
+      this.el.remove();
+      this.isRemoved = true;
+      //throw {text: 'must be array', info: this.root};
     }
   },
 
   render: function render(rootToBeRenderedTo) {
     if (this.isRendered) {
+      if (this.isRemoved) {
+        this.parent.appendChild(this.el);
+        this.el = this.parent.lastChild;
+        this.isRemoved = false;
+      }
       return this;
     }
     var root = this.root;
@@ -1161,7 +1219,7 @@ Object.assign(Template.prototype, {
     var conf = this.conf;
     var shared = this.shared;
     var attrs = this.attrs;
-    this.state.vars = Object.keys(conf).reduce(function (state, key) {
+    this.state = Object.keys(conf).reduce(function (state, key) {
       var a = conf[key].reduce(prepareState(root, attrs, key, shared), { childs: [], states: [] });
       a.childs.forEach(replaceChildren);
       state[key] = a.states;
@@ -1170,6 +1228,7 @@ Object.assign(Template.prototype, {
     if (rootToBeRenderedTo) {
       var back = root.cloneNode(true);
       rootToBeRenderedTo.appendChild(root);
+      this.el = rootToBeRenderedTo.lastChild;
       this.root = back;
       this.parent = rootToBeRenderedTo;
     }
@@ -1202,24 +1261,28 @@ function prepareState(root, attrs, key, shared) {
           states.attr = confItem.attr;
           break;
         case 'text':
-          if (textNode === undefined) {
-            textNode = _global.document.createTextNode('');
+          if (TEXTNODE === undefined) {
+            TEXTNODE = _global.document.createTextNode('');
           }
-          newChild = textNode.cloneNode();
+          newChild = TEXTNODE.cloneNode();
           oldChild = el;
           states.el = newChild;
           reduced.childs.push([oldChild, newChild]);
           break;
         case 'class':
-          if (fragment === undefined) {
-            fragment = _global.document.createDocumentFragment();
+          if (FRAGMENT === undefined) {
+            FRAGMENT = _global.document.createDocumentFragment();
           }
           oldChild = el;
-          newChild = fragment.cloneNode();
+          newChild = FRAGMENT.cloneNode();
           states.el = oldChild;
           states.prevEl = newChild;
           states.isHidden = true;
-          states.instance = shared[key].render().clone().render(newChild);
+          if (shared[key] !== undefined) {
+            states.template = shared[key].render().clone().render(newChild);
+          } else {
+            throw { text: key + ' is not defined', info: { shared: shared, key: key } };
+          }
           break;
         case 'named':
           states.el = el;
@@ -1259,10 +1322,8 @@ function combineUpdates(result, up) {
       resUP.html = up.el;
       break;
     case 'attr':
-      resUP.attr = up.opts.reduce(function (acc, val) {
-        acc[val.attrName] = val.tmpl.join('');
-        return acc;
-      }, resUP.attr || {});
+      resUP.attr = resUP.attr || {};
+      resUP.attr[up.opts.attrName] = up.opts.tmpl.join('');
       break;
     case 'text':
       resUP.text = up.value;
@@ -1281,9 +1342,9 @@ function doUpdates(update) {
     Object.keys(update.attr).forEach(function (key) {
       update.el.setAttribute(key, update.attr[key]);
     });
-  } else if (update.text) {
+  } else if ('text' in update) {
     update.el.nodeValue = update.text;
-  } else if (update.html) {
+  } else if ('html' in update) {
     var oldChild = update.html[0];
     var newChild = update.html[1];
     oldChild.replaceWith(newChild);
@@ -1308,18 +1369,18 @@ function gotoChild(root, index) {
 }
 
 function loadWithIframe(strHTML) {
-  if (template === undefined) {
-    template = _global.document.createElement('template');
+  if (TEMPLATE === undefined) {
+    TEMPLATE = _global.document.createElement('template');
   }
-  var root = template.cloneNode();
+  var root = TEMPLATE.cloneNode();
   root.innerHTML = strHTML;
   return root.content || templateFallback(root);
 }
 function templateFallback(root) {
-  if (fragment === undefined) {
-    fragment = _global.document.createDocumentFragment();
+  if (FRAGMENT === undefined) {
+    FRAGMENT = _global.document.createDocumentFragment();
   }
-  var f = fragment.cloneNode(false);
+  var f = FRAGMENT.cloneNode(false);
   var child;
   while (child = root.firstElementChild) {
     f.appendChild(child);
@@ -1327,102 +1388,106 @@ function templateFallback(root) {
   return f;
 }
 
-function setItem(key, value, _this) {
-  return function (item) {
-    if (item.prevValue !== value) {
-      item.prevValue = value;
-      switch (item.type) {
+function setState(key, value, _this) {
+  return function (state) {
+    if (state.prevValue !== value) {
+      state.prevValue = value;
+      switch (state.type) {
         case 'text':
-          return { type: 'text', el: item.el, value: value, key: key };
-        /*break;*/
+          return { type: 'text', el: state.el, value: value, key: key };
         case 'attr':
+          var attr = _this.attrs[state.attr];
           return {
             type: 'attr',
-            el: item.el,
+            el: state.el,
             value: value,
             key: key,
-            opts: _this.attrs.filter(function (a) {
-              return key in a.keys;
-            }).map(function (attr) {
-              return {
-                attrName: attr.name,
-                tmpl: attr.keys[key].reduce(function (acc2, keyIndex) {
-                  acc2[keyIndex] = value;
-                  return acc2;
-                }, attr.tmpl)
-              };
-            }, {})
+            opts: {
+              attrName: attr.name,
+              tmpl: attr.keys[key].reduce(function (acc2, keyIndex) {
+                acc2[keyIndex] = value;
+                return acc2;
+              }, attr.tmpl)
+            }
           };
-        /*break;*/
         case 'html':
-          if (div === undefined) {
-            div = _global.document.createElement('div');
-            div.className = 'base-wrapper';
+          if (DIV === undefined) {
+            DIV = _global.document.createElement('div');
+            DIV.className = 'base-wrapper';
           }
-          var newChild = div.cloneNode();
-          var oldChild = item.el;
+          var newChild = DIV.cloneNode();
+          var oldChild = state.el;
           newChild.innerHTML = value;
-          item.el = newChild;
+          state.el = newChild;
           return {
             type: 'html',
             el: [oldChild, newChild],
             key: key,
             value: value
           };
-        /*break;*/
         case 'class':
           if (_miscUtils.isArray(value)) {
-            if (item.isHidden) {
-              togglePrevEl(item);
-              item.isHidden = false;
+            if (state.isHidden) {
+              togglePrevEl(state);
+              state.isHidden = false;
             }
             if (value.length > 1) {
-              if (item.clones) {
-                doClonedStaff(item, value);
+              if (state.clones) {
+                doClonedStaff(state, value);
               } else {
-                makeClones(item, value.length, item.instance);
+                makeClones(state, value.length, state.template);
               }
               value.forEach(function (v, i) {
-                item.clones[i].set(v);
+                //debugger;
+                if (_miscUtils.isArray(v)) {
+                  console.error('dont know how to set array');
+                } else if (_miscUtils.isObject(v)) {
+                  state.clones[i].set(v);
+                } else if (hide(state.clones[i], v)) {} else if (show(state.clones[i], v)) {}
               });
               var targetNode;
-              if (item.el.length) {
-                targetNode = item.el[item.el.length - 1];
+              if (_miscUtils.isArray(state.el) && state.el.length) {
+                // Comment.lenght!!!
+                targetNode = state.el[state.el.length - 1];
               } else {
-                targetNode = item.el;
+                targetNode = state.el;
               }
-              targetNode.parentNode.append(item.f);
+              if (targetNode.parentNode) {
+                targetNode.parentNode.append(state.fragment);
+              } else {
+                state.template.el.parentNode.append(state.fragment);
+              }
             } else {
-              item.instance.set(value[0]);
+              state.template.set(value[0]);
             }
           } else if (_miscUtils.isObject(value)) {
-            if (item.isHidden) {
-              togglePrevEl(item);
-              item.isHidden = false;
+            if (state.isHidden) {
+              togglePrevEl(state);
+              state.isHidden = false;
             }
-            item.instance.set(value);
+            state.template.set(value);
           } else if ([false, 0, '0', null].includes(value)) {
-            if (!item.isHidden) {
-              togglePrevEl(item);
-              item.isHidden = true;
+            if (!state.isHidden) {
+              togglePrevEl(state);
+              state.isHidden = true;
             }
           } else if ([true, 1, '1'].includes(value)) {
-            if (item.isHidden) {
-              togglePrevEl(item);
-              item.isHidden = false;
+            if (state.isHidden) {
+              togglePrevEl(state);
+              state.isHidden = false;
             }
           }
           break;
         case 'named':
           if ([false, 0, '0', null].includes(value)) {
-            if (!item.isHidden) {
-              togglePrevEl(item);
-              item.isHidden = true;
+            if (!state.isHidden) {
+              togglePrevEl(state);
+              state.isHidden = true;
             }
           } else if ([true, 1, '1'].includes(value)) {
-            if (item.isHidden) {
-              togglePrevEl(item);
-              item.isHidden = false;
+            if (state.isHidden) {
+              togglePrevEl(state);
+              state.isHidden = false;
             }
           }
           break;
@@ -1430,9 +1495,12 @@ function setItem(key, value, _this) {
     }
   };
 }
-function togglePrevEl(item) {
-  var newChild = item.prevEl;
-  var oldChild = item.el;
+function togglePrevEl(state) {
+  if (TEXTNODE === undefined) {
+    TEXTNODE = _global.document.createTextNode('');
+  }
+  var newChild = state.prevEl || TEXTNODE.cloneNode();
+  var oldChild = state.el;
   var newRoot;
 
   if (_miscUtils.isFragment(newChild)) {
@@ -1454,45 +1522,65 @@ function togglePrevEl(item) {
   if (_miscUtils.isFragment(newChild)) {
     newChild = newRoot;
   }
-  item.el = newChild;
-  item.prevEl = oldChild;
+  state.el = newChild;
+  state.prevEl = oldChild;
 }
 
-function makeClones(item, valLength, toBeCloned) {
-  if (fragment === undefined) {
-    fragment = _global.document.createDocumentFragment();
+function makeClones(state, valLength, toBeCloned) {
+  if (FRAGMENT === undefined) {
+    FRAGMENT = _global.document.createDocumentFragment();
   }
-  var f = fragment.cloneNode();
+  var fragment = FRAGMENT.cloneNode();
   var k = toBeCloned.root.childNodes.length;
-  item.clones = [toBeCloned];
+  state.clones = [toBeCloned];
   for (var i = 1; i < valLength; i++) {
-    var clone = toBeCloned.clone();
-    clone.render(f);
-    clone.root = f.childNodes.slice((i - 1) * k); //
-    item.clones.push(clone);
+    var clone = toBeCloned.clone().render(fragment);
+    clone.root = fragment.childNodes.slice((i - 1) * k); //
+    state.clones.push(clone);
   }
-  item.f = f;
+  state.fragment = fragment;
 }
 
-function doClonedStaff(item, value) {
+function doClonedStaff(state, value) {
   var valLength = value.length;
-  var clonLength = item.clones.length;
+  var clonLength = state.clones.length;
   if (clonLength > valLength) {
-    item.clones.slice(valLength).forEach(function (tmpl) {
+    state.clones.slice(valLength).forEach(function (tmpl) {
       tmpl.remove();tmpl = null;
     });
   } else if (clonLength < valLength) {
-    if (fragment === undefined) {
-      fragment = _global.document.createDocumentFragment();
+    if (FRAGMENT === undefined) {
+      FRAGMENT = _global.document.createDocumentFragment();
     }
-    var f = fragment.cloneNode();
-    var toBeCloned = item.instance;
+    var fragment = FRAGMENT.cloneNode();
+    var toBeCloned = state.template;
     for (var i = clonLength; i <= valLength; i++) {
-      var clone = toBeCloned.clone().render(f);
-      item.clones.push(clone);
+      var clone = toBeCloned.clone().render(fragment);
+      state.clones.push(clone);
     }
-    item.f = f;
+    state.fragment = fragment;
   }
+}
+
+function hide(state, value) {
+  if ([false, 0, '0', null].includes(value)) {
+    if (!state.isHidden) {
+      togglePrevEl(state);
+      state.isHidden = true;
+    }
+    return true;
+  }
+  return false;
+}
+function show(state, value) {
+  if ([true, 1, '1'].includes(value)) {
+    if (state.isHidden) {
+      togglePrevEl(state);
+      state.isHidden = false;
+    }
+    return true;
+  }
+  return false;
 }
 module.exports = exports['default'];
 
@@ -1510,10 +1598,14 @@ var _vangaBase2 = _interopRequireDefault(_vangaBase);
 ;
 
 var __SHARED__ = {};
-var Answer = __SHARED__['Answer'] = new _vangaBase2['default']("<div class=\"\" attr1=\"--\"><a href=\"/answer/\" class=\"published\"></a></div>", { "id": [{ "type": "attr", "attr": 0 }, { "type": "attr", "attr": 1 }, { "type": "attr", "attr": 2 }], "b": [{ "type": "attr", "attr": 0 }, { "type": "attr", "attr": 1 }], "c": [{ "type": "attr", "attr": 3 }] }, [{ "keys": { "id": [0], "b": [2] }, "name": "class", "tmpl": ["", " ", ""], "path": [0] }, { "keys": { "b": [0], "id": [2] }, "name": "attr1", "tmpl": ["", " -", "", "-"], "path": [0] }, { "keys": { "id": [1] }, "name": "href", "tmpl": ["/answer/", ""], "path": [0, 0] }, { "keys": { "c": [0] }, "name": "class", "tmpl": ["", "published"], "path": [0, 0] }], __SHARED__, {});
+var t1 = __SHARED__['t1'] = new _vangaBase2['default']("<!--t2-->", { "t2": [{ "path": [0], "type": "class", "attrs": [] }] }, [], __SHARED__, {});
 
-exports['default'] = Answer;
+exports['default'] = t1;
 
+;
+var t2 = __SHARED__['t2'] = new _vangaBase2['default']("<a></a>", {}, [], __SHARED__, {});
+
+;
 ;
 
 ;
@@ -3372,7 +3464,8 @@ var _tape = require('tape');
 
 var _tape2 = _interopRequireDefault(_tape);
 
-/*it('should bind text', (t) => {
+/*
+it('should bind text', (t) => {
   t.plan(1);
   var { el, template } = load('../build/simpleText');
   var expectedText = 'some text';
@@ -3436,21 +3529,46 @@ it('should bind component', (t) => {
   var { el, template } = load('../build/simpleComponents');
   template.set('component1', true);
   t.equal('I am an component 1!', el.querySelector('h1').textContent);
+});
+
+//import '../build/multiVar';
+it('equal vars in different places', t => {
+  t.plan(1);
+  var { el, template } = load('../build/multiVar');
+  var values = {
+    id: 224647246,
+    b: 'b',
+    c: 'c'
+  };
+  template.set(values);
+  t.equal(`${values.c} published ${values.id}`, el.find('.published').attr('class'));
 });*/
 
-require('../build/multiVar');
+require('../build/complexClasses');
 
-_tape2['default']('equal vars in different places', function (t) {
-  t.plan(1);
+_tape2['default']('complexClasses', function (t) {
+  t.plan(8);
 
-  var _load = load('../build/multiVar');
+  var _load = load('../build/complexClasses');
 
-  var el = _load.el;
   var template = _load.template;
 
-  template.set('id', 224647246);
-  //console.error(el.outerHTML);
-  t.equal('published added', el.find('.published').attr('class'));
+  var values = { t2: [0, 0] };
+  template.set(values);
+  t.equal(true, _global.body.childNodes[0] instanceof Text);
+  t.equal(true, _global.body.childNodes[1] instanceof Text);
+  values = { t2: [0, 1] };
+  template.set(values);
+  t.equal(true, _global.body.childNodes[0] instanceof Text);
+  t.equal(true, _global.body.childNodes[1] instanceof HTMLAnchorElement);
+  values = { t2: [1, 0] };
+  template.set(values);
+  t.equal(true, _global.body.childNodes[0] instanceof HTMLAnchorElement);
+  t.equal(true, _global.body.childNodes[1] instanceof Text);
+  values = { t2: [1, 1] };
+  template.set(values);
+  t.equal(true, _global.body.childNodes[0] instanceof HTMLAnchorElement);
+  t.equal(true, _global.body.childNodes[1] instanceof HTMLAnchorElement);
 });
 
 function load(tmlpName) {
@@ -3461,7 +3579,7 @@ function load(tmlpName) {
   return { el: el, template: template };
 }
 
-},{"../build/multiVar":6,"global":1,"misc/dom":2,"misc/polyfills":3,"tape":7}],37:[function(require,module,exports){
+},{"../build/complexClasses":6,"global":1,"misc/dom":2,"misc/polyfills":3,"tape":7}],37:[function(require,module,exports){
 
 },{}],38:[function(require,module,exports){
 arguments[4][37][0].apply(exports,arguments)
