@@ -9,7 +9,7 @@ module.exports = function (node) {
     node.parent.siblings = node.parent.siblings + 1 || 0;
     node.path = (node.parent.path || []).concat([node.parent.siblings]);
   } else {
-    node.siblings = 0;
+    node.siblings = -1;
     node.path = [0];
   }
   parser.parent = node;

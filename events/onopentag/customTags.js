@@ -29,9 +29,9 @@ module.exports = function(node, parser) {
     parser.elConf[key].push(elConf);
     parser.source.push('"<!--' + node.name + '-->"');
   } else {
-    node.siblings = 0;
-    node.path = [];
-  }
+    node.siblings = -1;
+    node.path = [0];
+  } 
 };
 function compileAttributes(node, parser, key) {
   var attrNames = Object.keys(node.attributes);

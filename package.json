@@ -11,29 +11,41 @@
   ],
   "main": "index.js",
   "scripts": {
+    "start": "NODE_ENV=production babel base.es6.js --out-file base.js",
+    "watch": "NODE_ENV=production babel base.es6.js --watch --out-file base.js",
     "test": "babel-node test | faucet",
     "test-bro": "browserify ./test/index.js > test/bundle.js"
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "stage-0",
+      "es2015-loose"
+    ]
   },
   "dependencies": {
     "through2": "*",
     "through": "*",
-    "gulp-util": "*",
-    "sax": "*"
-  },
-  "devDependencies": {
+    "sax": "*",
     "babel": "*",
-    "babelify": "^6.3.0",
-    "faucet": "0.0.1",
+    "babelify": "*",
+    "faucet": "*",
     "gulp": "*",
+    "gulp-util": "*",
     "gulp-beautify": "*",
     "gulp-eslint": "*",
     "gulp-mocha": "*",
     "gulp-rename": "*",
     "gulp-spawn-shim": "*",
-    "jsdom": "^6.5.1",
+    "jsdom": "*",
     "tap-nyan": "*",
-    "tape": "^4.2.0",
-    "testling": "^1.7.1"
+    "tape": "*"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.3.17",
+    "babel-preset-es2015": "*",
+    "babel-preset-es2015-loose": "*",
+    "babel-preset-stage-0": "*"
   },
   "repository": {
     "type": "git",
@@ -50,7 +62,7 @@
     "url": "https://github.com/QiV/fest-dom-loader/issues"
   },
   "homepage": "https://github.com/QiV/fest-dom-loader#readme",
-  "browserify": {
+  "browserif-xz": {
     "transform": [
       [
         "babelify",
