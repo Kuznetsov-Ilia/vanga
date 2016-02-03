@@ -15,8 +15,8 @@ function getClassStr (node, parser) {
   var name = node.name;
   var html;
   if (parser.source.length) {
-    parser.source.unshift(`"<${name}>"`);
-    parser.source.push(`"</${name}>"`);
+    parser.source.unshift(`"<app:${name}>"`);
+    parser.source.push(`"</app:${name}>"`);
     html = parser.source.join('+').replace(/"\+"/g, '');
   } else {
     html = '""';

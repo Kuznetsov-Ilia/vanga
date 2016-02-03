@@ -67,6 +67,10 @@ Object.assign(Template.prototype, {
     var state = this.state[key];
     return state ? state[0].el : false;
   },
+  val (key) {
+    var state = this.state[key];
+    return state ? state[0].prevValue : undefined;
+  },
 
   clone () {
     var clone = new Template(this.html, this.conf, this.attrs, this.shared, this.binded);
@@ -88,7 +92,7 @@ Object.assign(Template.prototype, {
           this.el.remove();
         } else {
           Object.keys(this.state)
-            .forEach(key => this.state[key].forEach(state => hide));
+            .forEach(key => this.state[key].forEach(hide));
         }
       } else if (this.parent) {
         debugger;
@@ -98,16 +102,26 @@ Object.assign(Template.prototype, {
     this.isRemoved = true;
   },
 
-  //hideAllStates
-
   render(rootToBeRenderedTo) {
     if (this.isRendered) {
       if (this.isRemoved) {
         if (rootToBeRenderedTo !== undefined) {
           this.parent = rootToBeRenderedTo;
         }
-        this.parent.appendChild(this.el);
-        this.el = this.parent.lastChild;
+
+        
+        if ([Node.TEXT_NODE, Node.COMMENT_NODE].includes(rootToBeRenderedTo.nodeType)) {
+          this.el = this.el.lastChild;
+          rootToBeRenderedTo.replaceWith(this.el);
+          this.parent = this.el.parentNode;
+        } else {
+          rootToBeRenderedTo.appendChild(this.el);
+          this.el = rootToBeRenderedTo.lastChild;
+          this.parent = rootToBeRenderedTo;
+        }
+
+        /*this.parent.appendChild(this.el);
+        this.el = this.parent.lastChild;*/
         this.isRemoved = false;
       }
       return this;

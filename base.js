@@ -1,12 +1,8 @@
-'use strict';
-
 exports.__esModule = true;
 
 var _global = require('global');
 
 var _utils = require('misc/utils');
-
-function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
 
 var TEMPLATE;
 var DIV;
@@ -73,6 +69,10 @@ Object.assign(Template.prototype, {
     var state = this.state[key];
     return state ? state[0].el : false;
   },
+  val: function val(key) {
+    var state = this.state[key];
+    return state ? state[0].prevValue : undefined;
+  },
   clone: function clone() {
     var clone = new Template(this.html, this.conf, this.attrs, this.shared, this.binded);
     if (this.root) {
@@ -98,9 +98,7 @@ Object.assign(Template.prototype, {
           this.el.remove();
         } else {
           Object.keys(this.state).forEach(function (key) {
-            return _this2.state[key].forEach(function (state) {
-              return hide;
-            });
+            return _this2.state[key].forEach(hide);
           });
         }
       } else if (this.parent) {
@@ -110,17 +108,25 @@ Object.assign(Template.prototype, {
     }
     this.isRemoved = true;
   },
-
-  //hideAllStates
-
   render: function render(rootToBeRenderedTo) {
     if (this.isRendered) {
       if (this.isRemoved) {
         if (rootToBeRenderedTo !== undefined) {
           this.parent = rootToBeRenderedTo;
         }
-        this.parent.appendChild(this.el);
-        this.el = this.parent.lastChild;
+
+        if ([Node.TEXT_NODE, Node.COMMENT_NODE].includes(rootToBeRenderedTo.nodeType)) {
+          this.el = this.el.lastChild;
+          rootToBeRenderedTo.replaceWith(this.el);
+          this.parent = this.el.parentNode;
+        } else {
+          rootToBeRenderedTo.appendChild(this.el);
+          this.el = rootToBeRenderedTo.lastChild;
+          this.parent = rootToBeRenderedTo;
+        }
+
+        /*this.parent.appendChild(this.el);
+        this.el = this.parent.lastChild;*/
         this.isRemoved = false;
       }
       return this;
@@ -265,7 +271,7 @@ function combineUpdates(result, up) {
       break;
     case 'text':
       var value;
-      switch (_typeof(up.value)) {
+      switch (typeof up.value) {
         case 'number':
         case 'string':
           value = up.value;
