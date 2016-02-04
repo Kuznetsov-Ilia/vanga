@@ -131,15 +131,9 @@ Object.assign(Template.prototype, {
       }
       return this;
     }
-    var root = this.root;
-    if (!root) {
-      root = this.root = loadWithIframe(this.html);
-    }
-    var conf = this.conf;
-    var shared = this.shared;
-    var attrs = this.attrs;
+
     if (LIST === undefined) {
-      LIST = _global.document.createElement('list');
+      LIST = _global.document.createElement('x-list');
     }
     if (TEXTNODE === undefined) {
       TEXTNODE = _global.document.createTextNode('');
@@ -148,9 +142,16 @@ Object.assign(Template.prototype, {
       FRAGMENT = _global.document.createDocumentFragment();
     }
     if (DIV === undefined) {
-      DIV = _global.document.createElement('div');
-      DIV.className = 'base-wrapper';
+      DIV = _global.document.createElement('x-div');
     }
+
+    var root = this.root;
+    if (!root) {
+      root = this.root = loadWithIframe(this.html);
+    }
+    var conf = this.conf;
+    var shared = this.shared;
+    var attrs = this.attrs;
 
     this.state = Object.keys(conf).reduce(function (state, key) {
       var _conf$key$reduce = conf[key].reduce(prepareState(root, attrs, key, shared), { childs: [], states: [] });
@@ -326,19 +327,21 @@ function gotoChild(root, index) {
 
 function loadWithIframe(strHTML) {
   if (TEMPLATE === undefined) {
-    TEMPLATE = _global.document.createElement('template');
+    TEMPLATE = _global.document.createElement('div');
   }
   var root = TEMPLATE.cloneNode();
   root.innerHTML = strHTML;
-  return root.content || templateFallback(root);
+  return (/*root.content ||*/templateFallback(root)
+  );
 }
 function templateFallback(root) {
-  var f = FRAGMENT.cloneNode(false);
+  return root;
+  /*var f = TEMPLATE.cloneNode(false);
   var child;
   while (child = root.firstElementChild) {
     f.appendChild(child);
   }
-  return f;
+  return f;*/
 }
 
 function setState(key, value, _this) {
