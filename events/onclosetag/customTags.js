@@ -15,8 +15,17 @@ function getClassStr (node, parser) {
   var name = node.name;
   var html;
   if (parser.source.length) {
-    parser.source.unshift(`"<x-${name}>"`);
-    parser.source.push(`"</x-${name}>"`);
+    if (node.siblings === 0) {
+      if (parser.attr && parser.attr.length) {
+        parser.attr.forEach(function (a) {
+          a.path.shift();
+        });
+      }
+    } else {
+      parser.source.unshift(`"<x-${name}>"`);
+      parser.source.push(`"</x-${name}>"`);
+    }
+    //console.log(JSON.stringify(parser.attr));
     html = parser.source.join('+').replace(/"\+"/g, '');
   } else {
     html = '""';

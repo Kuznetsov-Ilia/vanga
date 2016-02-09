@@ -211,17 +211,8 @@ function prepareState(root, attrs, key, shared) {
         state.prevEl = newChild;
         state.isHidden = true;
 
-
-
-
         if (shared[key] !== undefined) {
-          //if (shared[key] instanceof Template) {
-
-            state.template = shared[key].render().clone().render(newChild);
-          /*} else {
-            state.template = shared[key];
-            state.isHidden = false;
-          }*/
+          state.template = shared[key].render().clone().render(newChild);
         } else {
           throw {text: key + ' is not defined', info: {shared, key}};
         }
@@ -323,20 +314,20 @@ function gotoChild(root, index) {
 
 function loadWithIframe (strHTML) {
   if (TEMPLATE === undefined) {
-    TEMPLATE = document.createElement('div');
+    TEMPLATE = document.createElement('template');
   }
   var root = TEMPLATE.cloneNode();
   root.innerHTML = strHTML;
-  return /*root.content ||*/ templateFallback(root);
+  return root.content || templateFallback(root);
 }
 function templateFallback(root) {
-  return root;
-  /*var f = TEMPLATE.cloneNode(false);
+  //return root;
+  var f = FRAGMENT.cloneNode(false);
   var child;
   while (child = root.firstElementChild) {
     f.appendChild(child);
   }
-  return f;*/
+  return f;
 }
 
 function setState(key, value, _this) {
