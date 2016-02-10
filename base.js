@@ -136,7 +136,7 @@ Object.assign(Template.prototype, {
       LIST = _global.document.createElement('x-list');
     }
     if (TEXTNODE === undefined) {
-      TEXTNODE = _global.document.createTextNode('');
+      TEXTNODE = _global.document.createTextNode(' ');
     }
     if (FRAGMENT === undefined) {
       FRAGMENT = _global.document.createDocumentFragment();
@@ -205,14 +205,14 @@ function prepareState(root, attrs, key, shared) {
           state.attr = confItem.attr;
           break;
         case 'text':
-          newChild = TEXTNODE.cloneNode();
+          newChild = TEXTNODE.cloneNode(false);
           oldChild = el;
           state.el = newChild;
           reduced.childs.push([oldChild, newChild]);
           break;
         case 'class':
           oldChild = el;
-          newChild = FRAGMENT.cloneNode();
+          newChild = FRAGMENT.cloneNode(false);
           state.el = oldChild;
           state.prevEl = newChild;
           state.isHidden = true;
@@ -226,7 +226,7 @@ function prepareState(root, attrs, key, shared) {
         case 'named':
           state.el = el;
           state.isHidden = false;
-          state.prevEl = _global.document.createComment('');
+          state.prevEl = _global.document.createComment(key);
           break;
       }
       reduced.states.push(state);
@@ -323,9 +323,9 @@ function loadWithIframe(strHTML) {
   if (TEMPLATE === undefined) {
     TEMPLATE = _global.document.createElement('template');
   }
-  var root = TEMPLATE.cloneNode();
+  var root = TEMPLATE.cloneNode(false);
   root.innerHTML = strHTML;
-  return root.content || templateFallback(root);
+  return root.content || root; //templateFallback(root);
 }
 function templateFallback(root) {
   //return root;
@@ -360,7 +360,7 @@ function setState(key, value, _this) {
             }
           };
         case 'html':
-          var newChild = DIV.cloneNode();
+          var newChild = DIV.cloneNode(false);
           var oldChild = state.el;
           newChild.innerHTML = value;
           state.el = newChild;
@@ -398,7 +398,7 @@ function setState(key, value, _this) {
                 state.el.appendChild(state.fragment);
               } else {
                 state.ELIsList = true;
-                var list = LIST.cloneNode();
+                var list = LIST.cloneNode(false);
                 list.appendChild(state.fragment);
                 var parent = state.el.parentNode;
                 var first = parent.replaceChild(list, state.el);
@@ -409,7 +409,7 @@ function setState(key, value, _this) {
             } else {
               if (state.ELIsList) {
                 state.ELIsList = false;
-                var textNode = TEXTNODE.cloneNode();
+                var textNode = TEXTNODE.cloneNode(false);
                 state.el.parentNode.replaceChild(state.el_back, state.el).remove();
                 state.el = state.el_back;
                 /*state.el.replaceChild(textNode, state.el_back);
@@ -447,7 +447,7 @@ function setState(key, value, _this) {
   };
 }
 function togglePrevEl(state) {
-  var newChild = state.prevEl || TEXTNODE.cloneNode();
+  var newChild = state.prevEl || TEXTNODE.cloneNode(false);
   var oldChild = state.el;
   var newRoot;
 
@@ -475,7 +475,7 @@ function togglePrevEl(state) {
 }
 
 function makeClones(state, valLength, toBeCloned) {
-  var fragment = FRAGMENT.cloneNode();
+  var fragment = FRAGMENT.cloneNode(false);
   var k = toBeCloned.root.childNodes.length;
   state.clones = [toBeCloned];
   for (var i = 1; i < valLength; i++) {
@@ -497,7 +497,7 @@ function doClonedStaff(state, value) {
       state.clones.pop().remove();
     }
   } else if (clonLength < valLength) {
-    var fragment = FRAGMENT.cloneNode();
+    var fragment = FRAGMENT.cloneNode(false);
     var toBeCloned = state.template;
     for (var i = clonLength; i < valLength; i++) {
       var clone = toBeCloned.clone().render(fragment);

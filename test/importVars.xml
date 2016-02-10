@@ -12,5 +12,4 @@
       attr1="inside parent between {two}$icon{vars}"
     ></div>
   </div>
-  <a></a>
 </WatchButton>
