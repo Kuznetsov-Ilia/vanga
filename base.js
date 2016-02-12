@@ -136,7 +136,7 @@ Object.assign(Template.prototype, {
       LIST = _global.document.createElement('x-list');
     }
     if (TEXTNODE === undefined) {
-      TEXTNODE = _global.document.createTextNode(' ');
+      TEXTNODE = _global.document.createTextNode('');
     }
     if (FRAGMENT === undefined) {
       FRAGMENT = _global.document.createDocumentFragment();

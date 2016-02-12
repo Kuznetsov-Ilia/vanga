@@ -19,12 +19,16 @@ function getClassStr (node, parser) {
     if (node.siblings == 0) {
       if (parser.attr && parser.attr.length) {
         parser.attr.forEach(function (a) {
-          a.path.shift();
+          if (a.path.length > 1) {
+            a.path.shift();
+          }
         });
       }
       (Object.keys(parser.elConf)||[]).forEach(function (key) {
         parser.elConf[key].forEach(function (p) {
-          p.path && p.path.shift();
+          if (p.path && p.path.length > 1) {
+            p.path.shift();
+          }
         })
       });
     } else {
