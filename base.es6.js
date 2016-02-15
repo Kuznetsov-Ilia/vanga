@@ -506,6 +506,7 @@ function hide(state) {
   if (!state.isHidden) {
     togglePrevEl(state);
     state.isHidden = true;
+    state.prevValue = false;
   }
 }
 function showable(value){
@@ -515,5 +516,6 @@ function show(state) {
   if (state.isHidden) {
     togglePrevEl(state);
     state.isHidden = false;
+    state.prevValue = true;
   }
 }
