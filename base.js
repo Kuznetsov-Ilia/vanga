@@ -340,7 +340,20 @@ function templateFallback(root) {
 function setState(key, value, _this) {
   return function (state) {
     if (state.prevValue !== value) {
-      state.prevValue = value;
+      if (typeof value === 'object') {
+        state.prevValue = {};
+        /*if (isArray(value)) {
+          state.prevValue = new Array(value.length);
+          var i = value.length;
+          while(i--) {
+            state.prevValue[i] = value[i];
+          }
+        } else {
+          state.prevValue = Object.assign({}, value);
+        }*/
+      } else {
+          state.prevValue = value;
+        }
       switch (state.type) {
         case 'text':
           return { type: 'text', el: state.el, value: value, key: key };
