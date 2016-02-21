@@ -10,32 +10,27 @@ module.exports = function(node, parser) {
     parser.templates.push(getClassStr(node, parser));
   }
 };
-
+function shiftPath(a){
+  if (a.path && a.path.length > 1) {
+    a.path = a.path.slice(1);
+  }
+  return a
+}
 function getClassStr (node, parser) {
   var name = node.name;
   var html;
   if (parser.source.length) {
-    //console.log(node.siblings);
     if (node.siblings == 0) {
       if (parser.attr && parser.attr.length) {
-        parser.attr.forEach(function (a) {
-          if (a.path.length > 1) {
-            a.path.shift();
-          }
-        });
+        parser.attr = parser.attr.slice(0).map(shiftPath);
       }
       (Object.keys(parser.elConf)||[]).forEach(function (key) {
-        parser.elConf[key].forEach(function (p) {
-          if (p.path && p.path.length > 1) {
-            p.path.shift();
-          }
-        })
+        parser.elConf[key] = parser.elConf[key].slice(0).map(shiftPath)
       });
     } else {
       parser.source.unshift(`"<x-${name}>"`);
       parser.source.push(`"</x-${name}>"`);
     }
-    //console.log(JSON.stringify(parser.elConf));
     html = parser.source.join('+').replace(/"\+"/g, '');
   } else {
     html = '""';

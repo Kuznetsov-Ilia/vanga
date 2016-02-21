@@ -25,7 +25,8 @@ gulp.task('test', (done) => gulp
 gulp.task('gen', (done) => gulp
   //.src('test/*.xml')
   //.src('test/importVars.xml')
-  .src('test/simpleAttributes.xml')
+  //.src('test/simpleAttributes.xml')
+  .src('test/pagination.xml')
   .pipe(vanga())
   .pipe(rename({extname: '.js'}))
   .pipe(gulp.dest('build'))

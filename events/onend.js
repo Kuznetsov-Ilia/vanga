@@ -27,9 +27,6 @@ module.exports = function() {
   var exportString = '';
   if (parser.exports.length) {
     exportString = 'export {' + parser.exports.join(',') + '};\n';
-    /*parser.exports.map(function(name){
-      return '__SHARED__[\''+ name+'\'] as ' + name;
-    }).join(',')*/
   }
 
   if (parser.exportDefault) {

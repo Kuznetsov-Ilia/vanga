@@ -522,7 +522,7 @@ function doClonedStaff(state, value) {
 }
 
 function hidable(value) {
-  return [false, 0, '0', null].includes(value);
+  return !showable(value);
 }
 function hide(state) {
   if (!state.isHidden) {
@@ -532,7 +532,18 @@ function hide(state) {
   }
 }
 function showable(value) {
-  return [true, 1, '1'].includes(value);
+  switch (typeof value) {
+    case 'object':
+      return value !== null;
+    case 'string':
+      return value !== '' && value !== '0';
+    case 'number':
+      return value > 0;
+    case 'boolean':
+      return value;
+    case 'undefined':
+      return false;
+  }
 }
 function show(state) {
   if (state.isHidden) {

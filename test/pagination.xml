@@ -1,0 +1,13 @@
+<Pagination export="default">
+  <div class="$pagination">
+    <a as="left" class="left" href="{base}{left}">&amp;larr;</a>
+    <a as="first" class="first" href="{base}{first}">{first}</a>
+    <a as="m2" href="{base}{m2}">{m2}</a>
+    <a as="m1" href="{base}{m1}">{m1}</a>
+    <a as="current" href="{base}{current}">{current}</a>
+    <a as="p1" href="{base}{p1}">{p1}</a>
+    <a as="p2" href="{base}{p2}">{p2}</a>
+    <a as="last" class="last" href="{base}{last}">{last}</a>
+    <a as="right" class="right" href="{base}{right}">&amp;rarr;</a>
+  </div>
+</Pagination>

@@ -1,11 +1,6 @@
 module.exports = function(node, parser) {
   if (node.parent) {
     var key = node.name;
-    //var index = parser.subClass.indexOf(key);
-
-    /*if (index === -1) {
-      index = parser.subClass.push(node.name) - 1;
-    }*/
     var condition;
 
     if (node.attributes.if) {
