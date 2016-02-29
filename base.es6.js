@@ -53,6 +53,21 @@ Object.assign(Template.prototype, {
     }
   },
 
+  reset () {
+    var keys = Object.keys(this.conf)
+      .filter(key => !this.conf[key].some(conf => conf.type === 'named'))
+      .reduce(
+        (obj, key) => {
+          // if (this.conf[key].some(conf => conf.type === 'attr')) {
+
+          // }
+          obj[key] = '';
+          return obj
+        }, {}
+      );
+    this.set(keys);
+  },
+
   get (key) {
     var state = this.state[key];
     if (state && state[0]) {
@@ -283,7 +298,12 @@ function combineUpdates(result, up) {
 
 function doUpdates(update) {
   if (update.attr) {
-    Object.keys(update.attr).forEach(key => { update.el.setAttribute(key, update.attr[key]); });
+    Object.keys(update.attr).forEach(key => {
+      update.el.setAttribute(key, update.attr[key]);
+      if (key === 'value' && update.el instanceof HTMLInputElement) {
+        update.el.value = update.attr[key];
+      }
+    });
   } else if ('text' in update) {
     update.el.nodeValue = update.text;
   } else if ('html' in update) {

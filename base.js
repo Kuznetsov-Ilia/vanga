@@ -57,6 +57,22 @@ Object.assign(Template.prototype, {
       console.error('unknown key', key);
     }
   },
+  reset: function reset() {
+    var _this2 = this;
+
+    var keys = Object.keys(this.conf).filter(function (key) {
+      return !_this2.conf[key].some(function (conf) {
+        return conf.type === 'named';
+      });
+    }).reduce(function (obj, key) {
+      // if (this.conf[key].some(conf => conf.type === 'attr')) {
+
+      // }
+      obj[key] = '';
+      return obj;
+    }, {});
+    this.set(keys);
+  },
   get: function get(key) {
     var state = this.state[key];
     if (state && state[0]) {
@@ -83,7 +99,7 @@ Object.assign(Template.prototype, {
     return clone;
   },
   remove: function remove() {
-    var _this2 = this;
+    var _this3 = this;
 
     if ((0, _utils.isArray)(this.root)) {
       // removing unused clones
@@ -98,7 +114,7 @@ Object.assign(Template.prototype, {
           this.el.remove();
         } else {
           Object.keys(this.state).forEach(function (key) {
-            return _this2.state[key].forEach(hide);
+            return _this3.state[key].forEach(hide);
           });
         }
       } else if (this.parent) {
@@ -291,6 +307,9 @@ function doUpdates(update) {
   if (update.attr) {
     Object.keys(update.attr).forEach(function (key) {
       update.el.setAttribute(key, update.attr[key]);
+      if (key === 'value' && update.el instanceof HTMLInputElement) {
+        update.el.value = update.attr[key];
+      }
     });
   } else if ('text' in update) {
     update.el.nodeValue = update.text;
