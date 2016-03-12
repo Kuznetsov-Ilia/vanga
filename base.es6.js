@@ -53,18 +53,18 @@ Object.assign(Template.prototype, {
     }
   },
 
-  reset () {
+  reset (obj) {
     var keys = Object.keys(this.conf)
       .filter(key => !this.conf[key].some(conf => conf.type === 'named'))
       .reduce(
         (obj, key) => {
-          // if (this.conf[key].some(conf => conf.type === 'attr')) {
-
-          // }
           obj[key] = '';
           return obj
         }, {}
       );
+    if (typeof obj === 'object') {
+      Object.assign(keys, obj);
+    }
     this.set(keys);
   },
 

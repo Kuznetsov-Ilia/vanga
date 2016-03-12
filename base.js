@@ -31,6 +31,9 @@ Object.assign(Template.prototype, {
     }
   },
   set: function set(key, value) {
+    if (!this.isRendered) {
+      return;
+    }
     var updates;
     if ((0, _utils.isObject)(key)) {
       if (this.pendingUpdates) {
@@ -57,7 +60,7 @@ Object.assign(Template.prototype, {
       console.error('unknown key', key);
     }
   },
-  reset: function reset() {
+  reset: function reset(obj) {
     var _this2 = this;
 
     var keys = Object.keys(this.conf).filter(function (key) {
@@ -65,12 +68,12 @@ Object.assign(Template.prototype, {
         return conf.type === 'named';
       });
     }).reduce(function (obj, key) {
-      // if (this.conf[key].some(conf => conf.type === 'attr')) {
-
-      // }
       obj[key] = '';
       return obj;
     }, {});
+    if (typeof obj === 'object') {
+      Object.assign(keys, obj);
+    }
     this.set(keys);
   },
   get: function get(key) {
