@@ -31,9 +31,6 @@ Object.assign(Template.prototype, {
     }
   },
   set: function set(key, value) {
-    if (!this.isRendered) {
-      return;
-    }
     var updates;
     if ((0, _utils.isObject)(key)) {
       if (this.pendingUpdates) {

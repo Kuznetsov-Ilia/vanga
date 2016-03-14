@@ -212,13 +212,13 @@ function prepareState(root, attrs, key, shared) {
       switch (confItem.type) {
       case 'attr':
         state.attr = confItem.attr;
-      break;
+        break;
       case 'text':
         newChild = TEXTNODE.cloneNode(false);
         oldChild = el;
         state.el = newChild;
         reduced.childs.push([oldChild, newChild]);
-      break;
+        break;
       case 'class':
         oldChild = el;
         newChild = FRAGMENT.cloneNode(false);
@@ -231,12 +231,12 @@ function prepareState(root, attrs, key, shared) {
         } else {
           throw {text: key + ' is not defined', info: {shared, key}};
         }
-      break;
+        break;
       case 'named':
         state.el = el;
         state.isHidden = false;
         state.prevEl = document.createComment(key);
-      break;
+        break;
       }
       reduced.states.push(state);
     } else {
@@ -268,28 +268,28 @@ function combineUpdates(result, up) {
   switch (up.type) {
   case 'html':
     resUP.html = up.el;
-  break;
+    break;
   case 'attr':
     resUP.attr = resUP.attr || {};
     resUP.attr[up.opts.attrName] = up.opts.tmpl.join('');
-  break;
+    break;
   case 'text':
     var value;
     switch (typeof up.value) {
     case 'number':
     case 'string':
       value = up.value;
-    break;
+      break;
     default:
       value = '';
-    break;
+      break;
     }
     resUP.text = value;
-  break;
+    break;
   case 'map':
     debugger;
     resUP.map = up;
-  break;
+    break;
   }
 
   result.updates[updateKey] = resUP;
