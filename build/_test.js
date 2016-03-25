@@ -1,11 +1,58 @@
+'use strict';
+
+var head = document.head || document.getElementsByTagName('head')[0];
+
+var html$1 = document.documentElement;
+var _window$1 = self || window;
+var head$1 = document.head || document.getElementsByTagName('head')[0];
+
+function isObject(value) {
+  return typeof value === 'object' && value !== null;
+}
+if (!Array.isArray) {
+  var op2str = Object.prototype.toString;
+  Array.isArray = function(a) {
+    return op2str.call(a) === '[object Array]';
+  };
+}
+function isArray(value) {
+  return Array.isArray(value);//return isset(value) && value instanceof Array;
+}
+function isset(value) {
+  return value !== undefined;
+}
+function isFragment(node) {
+  return isset(node) && node.nodeType === _window$1.Node.DOCUMENT_FRAGMENT_NODE;
+}
+/*function nodeListToNode(methodName) {
+  return function () {
+    var args = arguments;
+    var returnVals = [];
+    this.each(function (node) {
+      returnVals.push(UTILS[methodName].apply(node, args));
+    });
+    return returnVals;
+  };
+}
+*/
+/*for (var i in UTILS) {
+  Np[i] = UTILS[i];
+  NLp[i] = HCp[i] = Ap[i] = nodeListToNode(i);
+}*/
+
+
+_window$1.height = function () {
+  return html$1.clientHeight;
+};
+_window$1.width = function () {
+  return html$1.clientWidth;
+};
+
 var TEMPLATE;
 var DIV;
 var FRAGMENT;
 var TEXTNODE;
 var LIST;
-import {document} from 'global';
-import {isObject, isArray, isFragment} from 'misc/src/utils';
-export default Template;
 function Template(html, conf, attrs, shared, binded) {
   this.html = html;
   this.conf = conf;
@@ -340,16 +387,6 @@ function loadWithIframe (strHTML) {
   root.innerHTML = strHTML;
   return root.content || root; //templateFallback(root);
 }
-function templateFallback(root) {
-  //return root;
-  var f = FRAGMENT.cloneNode(false);
-  var child;
-  while (child = root.firstElementChild) {
-    f.appendChild(child);
-  }
-  return f;
-}
-
 function setState(key, value, _this) {
   return function (state) {
     if (state.prevValue !== value) {
@@ -558,3 +595,16 @@ function show(state) {
     state.prevValue = true;
   }
 }
+
+var main="_test_styles__main";
+
+var __SHARED__ = {"main":main};
+var Answer = __SHARED__['Answer'] =  new Template(
+  "<div class=\"" + main + "\" attr1=\"--\"><a href=\"/answer/\" class=\"published\"></a></div>",
+  {"id":[{"type":"attr","attr":0},{"type":"attr","attr":1},{"type":"attr","attr":2},{"type":"attr","attr":3}],"b":[{"type":"attr","attr":0},{"type":"attr","attr":1}],"c":[{"type":"attr","attr":3}]},
+  [{"keys":{"id":[1],"b":[3]},"name":"class","tmpl":["" + main + " ",""," ",""],"path":[0]},{"keys":{"b":[0],"id":[2]},"name":"attr1","tmpl":[""," -","","-"],"path":[0]},{"keys":{"id":[1]},"name":"href","tmpl":["/answer/",""],"path":[0,0]},{"keys":{"c":[0],"id":[2]},"name":"class","tmpl":[""," published ",""],"path":[0,0]}],
+  __SHARED__,
+  {}
+);
+
+console.log(Answer);

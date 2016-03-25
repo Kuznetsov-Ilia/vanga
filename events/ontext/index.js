@@ -1,5 +1,8 @@
 module.exports = function (text) {
   var parser = this;
+  if (!parser.parent) {
+    console.log(parser);
+  }
   var path = parser.parent.path;
   var siblings = parser.parent.siblings + 1 || 0;
   var replaceWithComments = function (str, match) {

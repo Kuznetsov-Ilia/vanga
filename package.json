@@ -10,7 +10,11 @@
     }
   ],
   "main": "index.js",
+  "jsnext:main": "base.es6.js",
   "scripts": {
+    "b11b": "rollup -i rollup-plugin.js -f cjs -o rollup-plugin.js",
+    "rollup-plugin": "NODE_ENV=production babel rollup-plugin.es6.js --out-file rollup-plugin.js",
+    "rollup": "rollup -c rollup.config.js",
     "start": "NODE_ENV=production babel base.es6.js --out-file base.js",
     "watch": "NODE_ENV=production babel base.es6.js --watch --out-file base.js",
     "test": "babel-node test | faucet",
