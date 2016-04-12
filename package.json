@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "babel-cli": "*",
+    "babel-loader": "^6.2.4",
     "babel-plugin-check-es2015-constants": "*",
     "babel-plugin-transform-do-expressions": "*",
     "babel-plugin-transform-es2015-arrow-functions": "*",
@@ -44,22 +45,22 @@
     "babel-plugin-transform-es2015-unicode-regex": "*",
     "babel-plugin-transform-function-bind": "*",
     "babel-plugin-transform-regenerator": "*",
-    "uglify-js": "*",
     "browserify": "*",
-    "through2": "*",
-    "through": "*",
-    "sax": "*",
     "faucet": "*",
     "gulp": "*",
-    "gulp-util": "*",
     "gulp-beautify": "*",
     "gulp-eslint": "*",
     "gulp-mocha": "*",
     "gulp-rename": "*",
     "gulp-spawn-shim": "*",
+    "gulp-util": "*",
     "jsdom": "*",
+    "sax": "*",
     "tap-nyan": "*",
-    "tape": "*"
+    "tape": "*",
+    "through": "*",
+    "through2": "*",
+    "uglify-js": "*"
   },
   "babel": {
     "plugins": [
