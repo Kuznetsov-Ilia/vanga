@@ -54,7 +54,7 @@ function Parser(opts) {
 
   var defaults = {
     lang: 'js',
-    path: 'vanga',
+    path: 'my-vanga',
     name: 'tmpl'
   };
   parser.opts = extend(defaults, opts);

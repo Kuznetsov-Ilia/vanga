@@ -7,7 +7,7 @@ exports.default = function (options) {
       if (!filter(id)) return;
       var code = 'export default function(){}';
       try {
-        options.path = 'vanga';
+        options.path = 'my-vanga';
         var parser = new Parser(options);
         parser.write('<xml>' + source + '</xml>', id);
         code = parser.getString();
