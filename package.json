@@ -1,51 +1,40 @@
 {
-  "name": "vanga",
+  "name": "my-vanga",
   "version": "0.0.1",
-  "description": "webpack loader for vanga",
+  "description": "dom templator with plugins for gulp, webpack, browserify, rollup",
   "author": "Ilia Kuznetsov",
-  "contributors": [
-    {
-      "name": "Ilia Kuznetsov",
-      "email": "killxxxvi@mail.ru"
-    }
-  ],
   "main": "index.js",
-  "jsnext:main": "base.es6.js",
+  "jsnext:main": "src/index.js",
+  "files": [
+    "index.js",
+    "events",
+    "plugins",
+    "tags",
+    "template",
+    "parser.js"
+  ],
   "scripts": {
-    "b11b": "rollup -i rollup-plugin.js -f cjs -o rollup-plugin.js",
-    "rollup-plugin": "NODE_ENV=production babel rollup-plugin.es6.js --out-file rollup-plugin.js",
-    "rollup": "rollup -c rollup.config.js",
-    "start": "NODE_ENV=production babel base.es6.js --out-file base.js",
-    "watch": "NODE_ENV=production babel base.es6.js --watch --out-file base.js",
+    "start": "rollup -c rollup.config.js",
+    "deploy": "git add . && git commit -am 'fix' && git push && npm publish",
     "test": "babel-node test | faucet",
     "test-bro": "browserify ./test/index.js > test/bundle.js"
   },
   "dependencies": {
-    "babel-cli": "*",
-    "babel-loader": "^6.2.4",
-    "babel-plugin-check-es2015-constants": "*",
-    "babel-plugin-transform-do-expressions": "*",
-    "babel-plugin-transform-es2015-arrow-functions": "*",
-    "babel-plugin-transform-es2015-block-scoped-functions": "*",
-    "babel-plugin-transform-es2015-block-scoping": "*",
-    "babel-plugin-transform-es2015-classes": "*",
-    "babel-plugin-transform-es2015-computed-properties": "*",
-    "babel-plugin-transform-es2015-destructuring": "*",
-    "babel-plugin-transform-es2015-for-of": "*",
-    "babel-plugin-transform-es2015-function-name": "*",
-    "babel-plugin-transform-es2015-literals": "*",
-    "babel-plugin-transform-es2015-modules-commonjs": "*",
-    "babel-plugin-transform-es2015-object-super": "*",
-    "babel-plugin-transform-es2015-parameters": "*",
-    "babel-plugin-transform-es2015-shorthand-properties": "*",
-    "babel-plugin-transform-es2015-spread": "*",
-    "babel-plugin-transform-es2015-sticky-regex": "*",
-    "babel-plugin-transform-es2015-template-literals": "*",
-    "babel-plugin-transform-es2015-typeof-symbol": "*",
-    "babel-plugin-transform-es2015-unicode-regex": "*",
-    "babel-plugin-transform-function-bind": "*",
-    "babel-plugin-transform-regenerator": "*",
-    "browserify": "*",
+    "my-global": "^5.0.0",
+    "my-util": "^1.0.0",
+    "rollup-plugin-node-resolve": "^1.5.0"
+  },
+  "devDependencies": {
+    "jsdom": "*",
+    "tap-nyan": "*",
+    "tape": "*",
+    "through": "*",
+    "through2": "*",
+    "uglify-js": "*",
+    "sax": "*",
+    "rollup": "*",
+    "rollup-plugin-node-resolve": "*",
+    "rollup-pluginutils": "*",
     "faucet": "*",
     "gulp": "*",
     "gulp-beautify": "*",
@@ -53,101 +42,16 @@
     "gulp-mocha": "*",
     "gulp-rename": "*",
     "gulp-spawn-shim": "*",
-    "gulp-util": "*",
-    "jsdom": "*",
-    "sax": "*",
-    "tap-nyan": "*",
-    "tape": "*",
-    "through": "*",
-    "through2": "*",
-    "uglify-js": "*"
-  },
-  "babel": {
-    "plugins": [
-      "check-es2015-constants",
-      "transform-do-expressions",
-      "transform-function-bind",
-      "transform-regenerator",
-      "transform-es2015-arrow-functions",
-      "transform-es2015-block-scoped-functions",
-      "transform-es2015-block-scoping",
-      "transform-es2015-sticky-regex",
-      "transform-es2015-unicode-regex",
-      "transform-es2015-object-super",
-      "transform-es2015-parameters",
-      "transform-es2015-shorthand-properties",
-      "transform-es2015-function-name",
-      "transform-es2015-literals",
-      [
-        "transform-es2015-classes",
-        {
-          "loose": true
-        }
-      ],
-      [
-        "transform-es2015-computed-properties",
-        {
-          "loose": true
-        }
-      ],
-      [
-        "transform-es2015-destructuring",
-        {
-          "loose": true
-        }
-      ],
-      [
-        "transform-es2015-for-of",
-        {
-          "loose": true
-        }
-      ],
-      [
-        "transform-es2015-modules-commonjs",
-        {
-          "strict": false,
-          "loose": true
-        }
-      ],
-      [
-        "transform-es2015-spread",
-        {
-          "loose": true
-        }
-      ],
-      [
-        "transform-es2015-template-literals",
-        {
-          "loose": true
-        }
-      ]
-    ]
+    "gulp-util": "*"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/QiV/vanga"
   },
-  "keywords": [
-    "webpackplugin"
-  ],
+  "keywords": [],
   "license": "MIT",
-  "gitHead": "ad384beb5d90d6377166f5f0827044c5ac911b23",
-  "readme": "1) взрывается када <space /> впихивается рядом с текстовыми переменными, типа:\n```\n<space />{textVar}\n```\n",
-  "readmeFilename": "readme.md",
   "bugs": {
     "url": "https://github.com/QiV/fest-dom-loader/issues"
   },
-  "homepage": "https://github.com/QiV/fest-dom-loader#readme",
-  "browserif-xz": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "extensions": [
-            ".js"
-          ]
-        }
-      ]
-    ]
-  }
+  "homepage": "https://github.com/QiV/fest-dom-loader#readme"
 }

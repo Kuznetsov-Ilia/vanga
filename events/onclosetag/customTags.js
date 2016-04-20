@@ -1,6 +1,6 @@
 var fs = require('fs');
 var path = require('path');
-var tmpl = path.join(__dirname, '../..', 'class-tmpl.js');
+var tmpl = path.join(__dirname, '../../template', 'class-tmpl.js');
 module.exports = function(node, parser) {
   if (node.parent) {
     if (node.attributes.from) {

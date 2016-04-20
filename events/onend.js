@@ -1,6 +1,6 @@
 var path = require('path');
 var fs = require('fs');
-var tmpl = path.join(__dirname, '../', 'tmpl.js');
+var tmpl = path.join(__dirname, '../template', 'tmpl.js');
 
 // parser stream is done, and ready to have more stuff written to it.
 module.exports = function() {
