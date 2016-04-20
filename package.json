@@ -9,6 +9,7 @@
     "index.js",
     "events",
     "plugins",
+    "src",
     "tags",
     "template",
     "parser.js"
