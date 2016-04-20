@@ -1,6 +1,6 @@
 {
   "name": "my-vanga",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "dom templator with plugins for gulp, webpack, browserify, rollup",
   "author": "Ilia Kuznetsov",
   "main": "index.js",
@@ -20,7 +20,7 @@
     "test-bro": "browserify ./test/index.js > test/bundle.js"
   },
   "dependencies": {
-    "my-global": "^5.0.0",
+    "my-global": "^1.0.0",
     "my-util": "^1.0.0",
     "rollup-plugin-node-resolve": "^1.5.0"
   },
