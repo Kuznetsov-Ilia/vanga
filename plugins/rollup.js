@@ -21,4 +21,4 @@ exports.default = function (options) {
 
 var _rollupPluginutils = require('rollup-pluginutils');
 
-var Parser = require('./parser.js');
+var Parser = require('../parser.js');

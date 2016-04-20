@@ -1,4 +1,4 @@
-var Parser = require('./parser.js');
+var Parser = require('../parser.js');
 var through = require('through');
 
 module.exports = function (fileName, options) {

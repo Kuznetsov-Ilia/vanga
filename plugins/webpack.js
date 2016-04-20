@@ -1,4 +1,4 @@
-var Parser = require('./parser.js');
+var Parser = require('../parser.js');
 module.exports = function(source) {
   this.cacheable && this.cacheable();
   var parser = new Parser();
