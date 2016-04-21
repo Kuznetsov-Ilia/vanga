@@ -29,7 +29,7 @@ function Parser(opts) {
   var parser = sax.parser(strict, options);
   parser.onopentag = require('./events/onopentag');
   parser.onclosetag = require('./events/onclosetag');
-  parser.onerror = require('./events/onerror');
+  parser.onerror = require('./events/onerror')(this);
   parser.oncdata = require('./events/oncdata');
   parser.ontext = require('./events/ontext');
   parser.onscript = require('./events/onscript');
