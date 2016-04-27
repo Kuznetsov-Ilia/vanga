@@ -317,13 +317,7 @@ function doUpdates(update) {
           update.el[key] = Boolean(num_val);
         }
       break;
-
       }
-      if (update.el instanceof HTMLInputElement || HTMLTextAreaElement )
-      if (key === 'value' && update.el instanceof HTMLInputElement) {
-        update.el.value = update.attr[key];
-      }
-      if (key === 'checked' && )
     });
   } else if ('text' in update) {
     update.el.nodeValue = update.text;
