@@ -1,6 +1,6 @@
 {
   "name": "my-vanga",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "dom templator with plugins for gulp, webpack, browserify, rollup",
   "author": "Ilia Kuznetsov",
   "main": "index.js",
