@@ -1,6 +1,6 @@
 {
   "name": "my-vanga",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "dom templator with plugins for gulp, webpack, browserify, rollup",
   "author": "Ilia Kuznetsov",
   "main": "index.js",
@@ -15,7 +15,7 @@
     "parser.js"
   ],
   "scripts": {
-    "start": "rollup -c rollup.config.js",
+    "start": "rollup -c rollup.config.js & rollup -f cjs -i src/parser.js -o parser.js & rollup -f cjs -i src/parser.js -o parser.js",
     "deploy": "git add . && git commit -am 'fix' && git push && npm publish",
     "test": "babel-node test | faucet",
     "test-bro": "browserify ./test/index.js > test/bundle.js"
