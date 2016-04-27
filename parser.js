@@ -1,3 +1,5 @@
+'use strict';
+
 var sax = require('sax');
 var fs = require('fs');
 var path = require('path');
@@ -15,8 +17,6 @@ var jshash = {
 };
 var reName = /^(?!(?:do|if|in|for|let|new|try|var|case|else|enum|eval|false|null|this|true|void|with|break|catch|class|const|super|throw|while|yield|delete|export|import|public|return|static|switch|typeof|default|extends|finally|package|private|continue|debugger|function|arguments|interface|protected|implements|instanceof)$)[$A-Z\_a-z][$A-Z\_a-z0-9]*$/;
 
-module.exports = Parser;
-
 function Parser(opts) {
   var strict = true;// set to false for html-mode
   var options = {
@@ -29,7 +29,7 @@ function Parser(opts) {
   var parser = sax.parser(strict, options);
   parser.onopentag = require('./events/onopentag');
   parser.onclosetag = require('./events/onclosetag');
-  parser.onerror = require('./events/onerror')(this);
+  parser.onerror = require('./events/onerror');
   parser.oncdata = require('./events/oncdata');
   parser.ontext = require('./events/ontext');
   parser.onscript = require('./events/onscript');
@@ -37,8 +37,6 @@ function Parser(opts) {
   parser.onend = require('./events/onend');
   parser.log = log;
 
-//  parser.expressions = [];
- // parser.exprCnt = 0;
   parser.source = [];
   parser.nodeNamesStack = [];
 
@@ -112,9 +110,6 @@ Parser.prototype.write = function (xmlString, filepath) {
 
 Parser.prototype.getSource = function () {
   return new Buffer(this.parser.output);
-};
-Parser.prototype.getString = function () {
-  return this.parser.output;
 };
 
 function escapeJS(s) {
@@ -232,3 +227,5 @@ function getLuaExpr(val) {
   val = val.replace(/\?/g, ' and ');
   return val;
 }
+
+module.exports = Parser;

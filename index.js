@@ -321,9 +321,23 @@ function combineUpdates(result, up) {
 function doUpdates(update) {
   if (update.attr) {
     Object.keys(update.attr).forEach(key => {
-      update.el.setAttribute(key, update.attr[key]);
-      if (key === 'value' && update.el instanceof HTMLInputElement) {
-        update.el.value = update.attr[key];
+      var val = update.attr[key];
+      update.el.setAttribute(key, val);
+
+      switch (String(update.el)) {
+      case '[object HTMLTextAreaElement]':
+      case '[object HTMLInputElement]':
+      case '[object HTMLSelectElement]':
+        if (['value'].indexOf(key) !== -1) {
+          update.el[key] = val;
+        } else if (['checked', 'disabled', 'selected'].indexOf(key) !== -1) {
+          var num_val = Number(val);
+          if (isNaN(val)) {
+            num_val = val;
+          }
+          update.el[key] = Boolean(num_val);
+        }
+      break;
       }
     });
   } else if ('text' in update) {
