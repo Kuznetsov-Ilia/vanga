@@ -29,7 +29,7 @@ function Parser(opts) {
   var parser = sax.parser(strict, options);
   parser.onopentag = require('./events/onopentag');
   parser.onclosetag = require('./events/onclosetag');
-  parser.onerror = require('./events/onerror');
+  parser.onerror = require('./events/onerror')(this);
   parser.oncdata = require('./events/oncdata');
   parser.ontext = require('./events/ontext');
   parser.onscript = require('./events/onscript');
@@ -110,6 +110,10 @@ Parser.prototype.write = function (xmlString, filepath) {
 
 Parser.prototype.getSource = function () {
   return new Buffer(this.parser.output);
+};
+
+Parser.prototype.getString = function () {
+  return this.parser.output;
 };
 
 function escapeJS(s) {
