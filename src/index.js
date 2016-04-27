@@ -309,12 +309,18 @@ function doUpdates(update) {
       case '[object HTMLSelectElement]':
         if (['value'].indexOf(key) !== -1) {
           update.el[key] = val;
-        } else if (['checked', 'disabled', 'selected'].indexOf(key) !== -1) {
-          var num_val = Number(val);
-          if (isNaN(val)) {
-            num_val = val;
+        } else if (['checked', 'disabled', 'selected', 'readonly'].indexOf(key) !== -1) {
+          if (['0', 'false'].indexOf(val) !== -1) {
+            val = false;
+          } else {
+            var num_val = Number(val);
+            if (isNaN(num_val)) {
+              num_val = val;
+            }
+            val = Boolean(num_val);
+            
           }
-          update.el[key] = Boolean(num_val);
+          update.el[key] = val;
         }
       break;
       }

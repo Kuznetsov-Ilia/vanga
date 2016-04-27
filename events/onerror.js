@@ -38,6 +38,7 @@ module.exports = function (parser) {
         console.error(file.join('\n'));
       }
     }
+    
     this.error = null;
     this.resume();        
   }  

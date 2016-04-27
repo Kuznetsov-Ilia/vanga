@@ -337,7 +337,7 @@ function doUpdates(update) {
           }
           update.el[key] = Boolean(num_val);
         }
-      break;
+        break;
       }
     });
   } else if ('text' in update) {
