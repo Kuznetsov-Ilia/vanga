@@ -228,7 +228,11 @@ function prepareState(root, attrs, key, shared) {
         state.isHidden = true;
 
         if (shared[key] !== undefined) {
-          state.template = shared[key].render().clone().render(newChild);
+          if (shared[key] instanceof Template) {
+            state.template = shared[key].render().clone().render(newChild);
+          } else {
+            state.instance = new shared[key]({el: state.el});
+          }
         } else {
           throw {text: key + ' is not defined', info: {shared, key}};
         }

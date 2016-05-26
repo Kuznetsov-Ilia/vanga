@@ -2,7 +2,7 @@ import gulp from 'gulp';
 import eslint from 'gulp-eslint';
 import mocha from 'gulp-mocha';
 import path from 'path';
-import vanga from './index.gulp';
+import vanga from './plugins/gulp';
 import rename from 'gulp-rename';
 gulp.task('eslint', () => {
   return gulp.src([
@@ -26,7 +26,7 @@ gulp.task('gen', (done) => gulp
   //.src('test/*.xml')
   //.src('test/importVars.xml')
   //.src('test/simpleAttributes.xml')
-  .src('test/pagination.xml')
+  .src('test/constructor.xml')
   .pipe(vanga())
   .pipe(rename({extname: '.js'}))
   .pipe(gulp.dest('build'))

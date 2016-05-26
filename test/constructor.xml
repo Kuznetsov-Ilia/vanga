@@ -1,0 +1,4 @@
+<import name="SubscribeButton" from="../Subscribe" />
+<BrandPage export="default">
+  <SubscribeButton />
+</BrandPage>

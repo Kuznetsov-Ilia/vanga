@@ -15,6 +15,7 @@
     "parser.js"
   ],
   "scripts": {
+    "gen": "gulp gen",
     "start": "rollup -c rollup.config.js & rollup -f cjs -i src/parser.js -o parser.js & rollup -f cjs -i src/parser.js -o parser.js",
     "deploy": "git add . && git commit -am 'fix' && git push && npm publish",
     "test": "babel-node test | faucet",
@@ -27,16 +28,8 @@
     "left-pad": "*"
   },
   "devDependencies": {
-    "jsdom": "*",
-    "tap-nyan": "*",
-    "tape": "*",
-    "through": "*",
-    "through2": "*",
-    "uglify-js": "*",
-    "sax": "*",
-    "rollup": "*",
-    "rollup-plugin-node-resolve": "*",
-    "rollup-pluginutils": "*",
+    "babel-core": "^6.9.0",
+    "babel-preset-es2015": "^6.9.0",
     "faucet": "*",
     "gulp": "*",
     "gulp-beautify": "*",
@@ -44,7 +37,17 @@
     "gulp-mocha": "*",
     "gulp-rename": "*",
     "gulp-spawn-shim": "*",
-    "gulp-util": "*"
+    "gulp-util": "*",
+    "jsdom": "*",
+    "rollup": "*",
+    "rollup-plugin-node-resolve": "*",
+    "rollup-pluginutils": "*",
+    "sax": "*",
+    "tap-nyan": "*",
+    "tape": "*",
+    "through": "*",
+    "through2": "*",
+    "uglify-js": "*"
   },
   "repository": {
     "type": "git",
