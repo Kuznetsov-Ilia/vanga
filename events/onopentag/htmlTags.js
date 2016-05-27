@@ -27,12 +27,18 @@ function compileAttributes(node, parser) {
   var result = Object.keys(attrs);
   var n = 0;
   var attrsArray = [''];
-
+  var elConf = null;
   for (i in attrs) {
     var attrValue = attrs[i].value;
-    if (i === 'as') {
+    if (i === 'radio') {
+      elConf = elConf || {};
+      elConf.input = 'radio';
+      elConf.name = attrValue;
+    } else if (i === 'as') {
       parser.elConf[attrValue] = parser.elConf[attrValue] || [];
-      parser.elConf[attrValue].push({type: 'named', path: node.path });
+      elConf = elConf || {};
+      elConf.type = 'named';
+      elConf.path = node.path;
     } else {
       var keys = (attrValue.match(/{[^}]*}/g) || []).map(sliceParenthesis);
       if (keys && keys.length) {
@@ -86,11 +92,16 @@ function compileAttributes(node, parser) {
       }
     }
   }
+  if (elConf !== null) {
+    parser.elConf[attrValue] = parser.elConf[attrValue] || [];
+    parser.elConf[attrValue].push(elConf);
+  }
   if (attrsArray.length > 1) {
     return attrsArray.join(' ');
   } else {
     return '';
   }
+
 }
 
 function sliceParenthesis (k) {
