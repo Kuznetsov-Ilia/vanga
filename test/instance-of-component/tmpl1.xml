@@ -1,0 +1,5 @@
+<import name="BB" from="./bb" />
+<tmpl export="default">
+  <a>{a}</a>
+  <BB test="[1,2,3]"/>
+</tmpl>

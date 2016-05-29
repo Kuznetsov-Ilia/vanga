@@ -1,24 +1,13 @@
 module.exports = function(node, parser) {
   if (node.parent) {
     var key = node.name;
-    var condition;
-
-    if (node.attributes.if) {
-      condition = parser.getAttr(node, 'if');
-    }
+    var attrs = compileAttributes2(node, parser, key);
     var elConf = {
       path: node.path,
-      type: 'class',
-      test: condition
-    };
-    var a = compileAttributes(node, parser, key);
-    if (a) {
-      if (a.tag) {
-        elConf.tag = a.tag;
-      }
-      if (a.attrs) {
-        elConf.attrs = a.attrs;
-      }
+      type: 'class'
+    }
+    if (attrs) {
+      elConf.data = attrs;
     }
     parser.elConf[key] = parser.elConf[key] || [];
     parser.elConf[key].push(elConf);
@@ -28,7 +17,25 @@ module.exports = function(node, parser) {
     node.path = [0];
   } 
 };
-function compileAttributes(node, parser, key) {
+
+function compileAttributes2(node, parser) {
+  var attrNames = Object.keys(node.attributes);
+  if (attrNames) {
+    return attrNames.reduce(function(acc, attributeName) {
+      var val = parser.getAttr(node, attributeName);
+      try {
+        acc[attributeName] = JSON.parse(val);
+      } catch(e) {
+        acc[attributeName] = val
+        
+      }
+      return acc;
+    }, {});
+  }
+  return false;
+}
+
+/*function compileAttributes(node, parser, key) {
   var attrNames = Object.keys(node.attributes);
   var returnObj;
   if (attrNames) {
@@ -72,4 +79,4 @@ function compileAttributes(node, parser, key) {
     }
     return bindings;
   }
-}
+}*/

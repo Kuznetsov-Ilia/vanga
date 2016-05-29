@@ -232,8 +232,9 @@ function prepareState(root, attrs, key, shared) {
             state.template = shared[key].render().clone().render(newChild);
           } else {
             state.isHidden = false;
-            state.instance = new shared[key]({el: state.el});
-            state.template = state.instance.template;
+            //state.instance = new shared[key]({el: state.el, data: confItem.data });
+            state.template = new shared[key]({el: state.el, data: confItem.data });
+            //state.template = state.instance.template;
             //state.el = state.template.el;
           }
         } else {
@@ -383,23 +384,15 @@ function templateFallback(root) {
 function setState(key, value, _this) {
   var originalValue = value;
   return function (state) {
-    if (state.prevValue !== value) {
+    if (state.prevValue !== originalValue) {
       if (typeof value === 'object') {
         state.prevValue = {};
-        /*if (isArray(value)) {
-          state.prevValue = new Array(value.length);
-          var i = value.length;
-          while(i--) {
-            state.prevValue[i] = value[i];
-          }
-        } else {
-          state.prevValue = Object.assign({}, value);
-        }*/
+      } else if (state.input === 'radio') {
+        value = state.name === originalValue;
+        state.prevValue = value;
+        state.originalValue = originalValue;
       } else {
         state.prevValue = value;
-      }
-      if (state.input === 'radio') {
-        value = state.name === originalValue;
       }
       switch (state.type) {
       case 'text':
