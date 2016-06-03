@@ -235,7 +235,7 @@ function prepareState(root, attrs, key, shared) {
             //state.instance = new shared[key]({el: state.el, data: confItem.data });
             state.template = new shared[key]({el: state.el, data: confItem.data });
             //state.template = state.instance.template;
-            //state.el = state.template.el;
+            state.el = state.template.el;
           }
         } else {
           throw {text: key + ' is not defined', info: {shared, key}};

@@ -1,0 +1,3 @@
+<A export="default">
+  <div as="b" z="{z} $c {x}">{text}</div>
+</A>

@@ -6,6 +6,9 @@ var head = document.head || document.getElementsByTagName('head')[0];
 function isObject(value) {
   return typeof value === 'object' && value !== null;
 }
+function isNode(value) {
+  return value instanceof window$1.Node;
+}
 if (!Array.isArray) {
   var op2str = Object.prototype.toString;
   Array.isArray = function(a) {
@@ -220,11 +223,11 @@ function prepareState(root, attrs, key, shared) {
     } else if (confItem.type === 'attr') {
       path = attrs[confItem.attr].path;
     }
-    if (path) {
+    if (path !== undefined) {
       var newChild;
       var oldChild;
       var el = resolveEl(path, root);
-      if (!el) {
+      if (!isNode(el)) {
         throw {text: 'no el resolved', info: confItem};
       }
       var state = {
@@ -246,13 +249,17 @@ function prepareState(root, attrs, key, shared) {
         newChild = FRAGMENT.cloneNode(false);
         state.el = oldChild;
         state.prevEl = newChild;
-        state.isHidden = true;
 
         if (shared[key] !== undefined) {
           if (shared[key] instanceof Template) {
+            state.isHidden = true;
             state.template = shared[key].render().clone().render(newChild);
           } else {
-            state.instance = new shared[key]({el: state.el});
+            state.isHidden = false;
+            //state.instance = new shared[key]({el: state.el, data: confItem.data });
+            state.template = new shared[key]({el: state.el, data: confItem.data });
+            //state.template = state.instance.template;
+            state.el = state.template.el;
           }
         } else {
           throw {text: key + ' is not defined', info: {shared, key}};
@@ -262,6 +269,8 @@ function prepareState(root, attrs, key, shared) {
         state.el = el;
         state.isHidden = false;
         state.prevEl = document.createComment(key);
+        state.name = confItem.name;
+        state.input = confItem.input;
         break;
       }
       reduced.states.push(state);
@@ -387,19 +396,15 @@ function loadWithIframe (strHTML) {
   return root.content || root; //templateFallback(root);
 }
 function setState(key, value, _this) {
+  var originalValue = value;
   return function (state) {
-    if (state.prevValue !== value) {
+    if (state.prevValue !== originalValue) {
       if (typeof value === 'object') {
         state.prevValue = {};
-        /*if (isArray(value)) {
-          state.prevValue = new Array(value.length);
-          var i = value.length;
-          while(i--) {
-            state.prevValue[i] = value[i];
-          }
-        } else {
-          state.prevValue = Object.assign({}, value);
-        }*/
+      } else if (state.input === 'radio') {
+        value = state.name === originalValue;
+        state.prevValue = value;
+        state.originalValue = originalValue;
       } else {
         state.prevValue = value;
       }
@@ -522,7 +527,9 @@ function togglePrevEl(state) {
   }
   if (isArray(oldChild)) {
     var lastChild = oldChild.pop();
-    lastChild.replaceWith(newChild);
+    if (lastChild) {
+      lastChild.replaceWith(newChild);
+    }
     oldChild.forEach(child => { child.remove(); } );
   } else {
     oldChild.replaceWith(newChild);
