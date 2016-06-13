@@ -309,28 +309,36 @@ function doUpdates(update) {
   if (update.attr) {
     Object.keys(update.attr).forEach(key => {
       var val = update.attr[key];
-      update.el.setAttribute(key, val);
-
-      switch (String(update.el)) {
-      case '[object HTMLTextAreaElement]':
-      case '[object HTMLInputElement]':
-      case '[object HTMLSelectElement]':
-        if (['value'].indexOf(key) !== -1) {
-          update.el[key] = val;
-        } else if (['checked', 'disabled', 'selected', 'readonly'].indexOf(key) !== -1) {
-          if (['0', 'false'].indexOf(val) !== -1) {
-            val = false;
-          } else {
-            var num_val = Number(val);
-            if (isNaN(num_val)) {
-              num_val = val;
+      if (key === 'style') {
+        var styles = val.split(';').reduce((acc, v) => {
+          var _v = v.split(':')
+          acc[_v[0]] = _v[1];
+          return acc;
+        }, {});
+        Object.assign(update.el.style, styles);
+      } else {
+        update.el.setAttribute(key, val);
+        switch (String(update.el)) {
+        case '[object HTMLTextAreaElement]':
+        case '[object HTMLInputElement]':
+        case '[object HTMLSelectElement]':
+          if (['value'].indexOf(key) !== -1) {
+            update.el[key] = val;
+          } else if (['checked', 'disabled', 'selected', 'readonly'].indexOf(key) !== -1) {
+            if (['0', 'false'].indexOf(val) !== -1) {
+              val = false;
+            } else {
+              var num_val = Number(val);
+              if (isNaN(num_val)) {
+                num_val = val;
+              }
+              val = Boolean(num_val);
+              
             }
-            val = Boolean(num_val);
-            
+            update.el[key] = val;
           }
-          update.el[key] = val;
+          break;
         }
-      break;
       }
     });
   } else if ('text' in update) {
