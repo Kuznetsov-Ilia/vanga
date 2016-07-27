@@ -27,8 +27,9 @@ gulp.task('gen', (done) => gulp
   //.src('test/importVars.xml')
   //.src('test/simpleAttributes.xml')
   //.src('test/radio/radio.xhtml')
-  .src('test/as-and-var-in-html.xml')
-  .pipe(vanga())
+  //.src('test/as-and-var-in-html.xml')
+  .src('test/eventable.xml')
+  .pipe(vanga({path:'../src'}))
   .pipe(rename({extname: '.js'}))
   .pipe(gulp.dest('build'))
 );

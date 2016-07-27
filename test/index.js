@@ -1,8 +1,20 @@
-import { body} from 'global';
-import 'misc/polyfills';
-import 'misc/dom';
+import { body } from 'my-global';
+/*import 'misc/polyfills';
+import 'misc/dom';*/
 //import 'misc/dom4';
 import it from 'tape';
+import eventable from '../build/eventable';
+
+it('should be eventable', t => {
+  t.plan(1);
+  eventable.render(body);
+  eventable.on('var1:click', function(e) {
+    e.stop();
+    t.ok();
+  });
+  //var { el, template } = load(eventable);
+})
+
 
 /*
 it('should bind text', (t) => {
@@ -85,7 +97,7 @@ it('equal vars in different places', t => {
 });*/
 
 //import '../build/complexClasses';
-it('complexClasses', t => {
+/*it('complexClasses', t => {
   t.plan(8);
   var { template } = load('../build/complexClasses');
   var values = {t2: [0, 0]};
@@ -106,6 +118,7 @@ it('complexClasses', t => {
   t.equal(true, body.childNodes[1] instanceof HTMLAnchorElement);
 });
 
+*/
 function load(tmlpName) {
   body.innerHTML = '';
   var template = require(tmlpName);

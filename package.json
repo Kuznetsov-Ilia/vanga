@@ -1,4 +1,11 @@
 {
+  "scripts": {
+    "gen": "gulp gen",
+    "start": "rollup -c rollup.config.js & rollup -f cjs -i src/parser.js -o parser.js & rollup -f cjs -i src/parser.js -o parser.js",
+    "deploy": "git add . && git commit -am 'fix' && git push && npm publish",
+    "test": "babel-node test | faucet",
+    "test-bro": "browserify ./test/index.js > test/bundle.js"
+  },
   "name": "my-vanga",
   "version": "1.1.7",
   "description": "dom templator with plugins for gulp, webpack, browserify, rollup",
@@ -14,13 +21,6 @@
     "template",
     "parser.js"
   ],
-  "scripts": {
-    "gen": "gulp gen",
-    "start": "rollup -c rollup.config.js & rollup -f cjs -i src/parser.js -o parser.js & rollup -f cjs -i src/parser.js -o parser.js",
-    "deploy": "git add . && git commit -am 'fix' && git push && npm publish",
-    "test": "babel-node test | faucet",
-    "test-bro": "browserify ./test/index.js > test/bundle.js"
-  },
   "dependencies": {
     "my-global": "^1.0.0",
     "my-util": "^1.0.0",

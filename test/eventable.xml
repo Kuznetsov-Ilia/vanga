@@ -1,0 +1,11 @@
+<T1 export="default">
+  <div class=" {v1}" as="var1" remit="click" style="width:10em;height:10em;background:gray;">
+    {textvar}
+  </div>
+  <div as="var2" remit="click" style="width:10em;height:10em;background:blue;">textvar</div>
+  <T2 />
+</T1>
+
+<T2>
+  <a href="/sdsd" as="var3" remit="click,mousein" style="width:10em;height:10em;background:green;"></a>
+</T2>

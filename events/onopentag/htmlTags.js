@@ -28,7 +28,7 @@ function compileAttributes(node, parser) {
   var n = 0;
   var attrsArray = [''];
   var elConf = null;
-  var attrsArray = [''].concat(result.filter(k => ['radio', 'as'].indexOf(k) === -1 ).map(i => {
+  var attrsArray = [''].concat(result.filter(k => ['radio', 'as', 'remit'].indexOf(k) === -1 ).map(i => {
     var attrValue = attrs[i].value;    
     var keys = (attrValue.match(/{[^}]*}/g) || []).map(sliceParenthesis);
     if (keys && keys.length) {
@@ -93,6 +93,13 @@ function compileAttributes(node, parser) {
     elConf.type = 'named';
     elConf.path = node.path;
   }
+  if (attrs.remit && attrs.as) {
+    if (!elConf) {
+      elConf = {};
+    }
+    elConf.events = String(attrs.remit.value).split(',');
+  }
+
   if (elConf !== null) {
     parser.elConf[attrValue] = parser.elConf[attrValue] || [];
     parser.elConf[attrValue].push(elConf);

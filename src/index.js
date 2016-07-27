@@ -1,3 +1,4 @@
+import {Eventable} from 'my-event';
 import {document} from 'my-global';
 import {isObject, isArray, isFragment, isNode} from 'my-util';
 export default Template;
@@ -18,7 +19,7 @@ function Template(html, conf, attrs, shared, binded) {
   this.pendingBinds = false;
   this.isRendered = false;
 }
-Object.assign(Template.prototype, {
+Object.assign(Eventable(Template.prototype), {
   recursiveSet (key) {
     var _this = this;
     return Object.keys(key).reduce(set, []);
@@ -70,11 +71,20 @@ Object.assign(Template.prototype, {
   },
 
   get (key) {
-    var state = this.state[key];
-    if (state && state[0]) {
-      return state[0].template || state[0];
-    }
-    else {
+    if (key) {
+      return key.split('/').reduce((acc, name) => {
+        if (isObject(acc) && isObject(acc.state)) {
+          var state = acc.state[name];
+          if (state && state[0]) {
+            if (state[0].clones) {
+              return state[0].clones;
+            } else {
+              return state[0].template || state[0];
+            }
+          }
+        }
+      }, this);
+    } else {
       console.error('unknown key', key, 'in', this.state);
     }
   },
@@ -99,20 +109,16 @@ Object.assign(Template.prototype, {
   },
 
   remove () {
-    if (isArray(this.root)) {// removing unused clones
-      debugger;
-      this.root.forEach(el => { el.remove(); });
-    } else { // removing explicitly outside
-      if (this.el) {
-        if (this.isRemovable) {
-          this.el.remove();
-        } else {
-          Object.keys(this.state)
-            .forEach(key => this.state[key].forEach(hide));
-        }
-      } else if (this.parent) {
-        debugger;
-        //this.parent.childNodes.forEach(el => { el.remove(); });
+    if (this.el) {
+      if (this.isRemovable) {
+        this.el.remove();
+        this.isRendered = false;
+      } else {
+        this.removeComment = this.removeComment || TEXTNODE.cloneNode(false);
+        this.hiddenEl = this.el;
+        this.el.replaceWith(this.removeComment);
+        this.el = this.removeComment;
+        //Object.keys(this.state).forEach(key => this.state[key].forEach(hide));
       }
     }
     this.isRemoved = true;
@@ -121,23 +127,25 @@ Object.assign(Template.prototype, {
   render(rootToBeRenderedTo) {
     if (this.isRendered) {
       if (this.isRemoved) {
-        if (rootToBeRenderedTo !== undefined) {
-          this.parent = rootToBeRenderedTo;
-        }
-
-        
-        if ([Node.TEXT_NODE, Node.COMMENT_NODE].includes(rootToBeRenderedTo.nodeType)) {
-          this.el = this.el.lastChild;
-          rootToBeRenderedTo.replaceWith(this.el);
-          this.parent = this.el.parentNode;
+        if (this.hiddenEl) {
+          this.el.replaceWith(this.hiddenEl);
+          this.el = this.hiddenEl;
+          this.hiddenEl = null;
+          
         } else {
-          rootToBeRenderedTo.appendChild(this.el);
-          this.el = rootToBeRenderedTo.lastChild;
-          this.parent = rootToBeRenderedTo;
+          if (rootToBeRenderedTo !== undefined) {
+            this.parent = rootToBeRenderedTo;
+          }
+          if ([Node.TEXT_NODE, Node.COMMENT_NODE].includes(rootToBeRenderedTo.nodeType)) {
+            this.el = this.el.lastChild;
+            rootToBeRenderedTo.replaceWith(this.el);
+            this.parent = this.el.parentNode;
+          } else {
+            rootToBeRenderedTo.appendChild(this.el);
+            this.el = rootToBeRenderedTo.lastChild;
+            this.parent = rootToBeRenderedTo;
+          }
         }
-
-        /*this.parent.appendChild(this.el);
-        this.el = this.parent.lastChild;*/
         this.isRemoved = false;
       }
       return this;
@@ -166,7 +174,7 @@ Object.assign(Template.prototype, {
 
     this.state = Object.keys(conf).reduce((state, key) => {
       var {childs, states} = conf[key].reduce(
-        prepareState(root, attrs, key, shared),
+        prepareState(this, root, attrs, key, shared),
         {childs: [], states: []}
       );
       childs.forEach(replaceChildren);
@@ -191,7 +199,7 @@ Object.assign(Template.prototype, {
   }
 });
 
-function prepareState(root, attrs, key, shared) {
+function prepareState(_this, root, attrs, key, shared) {
   return function(reduced, confItem) {
     var path;
     if (['text', 'html', 'class', 'named'].includes(confItem.type)) {
@@ -205,6 +213,11 @@ function prepareState(root, attrs, key, shared) {
       var el = resolveEl(path, root);
       if (!isNode(el)) {
         throw {text: 'no el resolved', info: confItem};
+      }
+      if (isArray(confItem.events)) {
+        confItem.events.forEach(eventName => el
+          .addEventListener(eventName, e => _this.trigger(`${key}:${eventName}`, e))
+        );
       }
       var state = {
         type: confItem.type,
@@ -229,11 +242,16 @@ function prepareState(root, attrs, key, shared) {
         if (shared[key] !== undefined) {
           if (shared[key] instanceof Template) {
             state.isHidden = true;
-            state.template = shared[key].render().clone().render(newChild);
+            state.template = shared[key].render().clone().render(state.prevEl);
           } else {
             state.isHidden = true;
-            state.template = new shared[key]({el: newChild, data: confItem.data });
-            state.prevEl = state.template.el;
+            state.template = new shared[key]({
+              data: confItem.data,
+              clone: function (_this, template) {
+                _this.template = template.render().clone().render(state.prevEl);
+                // /debugger;
+              }
+            });
           }
         } else {
           throw {text: key + ' is not defined', info: {shared, key}};
@@ -333,7 +351,7 @@ function doUpdates(update) {
                 num_val = val;
               }
               val = Boolean(num_val);
-              
+            
             }
             update.el[key] = val;
           }
@@ -376,15 +394,6 @@ function loadWithIframe (strHTML) {
   var root = TEMPLATE.cloneNode(false);
   root.innerHTML = strHTML;
   return root.content || root; //templateFallback(root);
-}
-function templateFallback(root) {
-  //return root;
-  var f = FRAGMENT.cloneNode(false);
-  var child;
-  while (child = root.firstElementChild) {
-    f.appendChild(child);
-  }
-  return f;
 }
 
 function setState(key, value, _this) {
@@ -430,6 +439,9 @@ function setState(key, value, _this) {
           value: value
         };
       case 'class':
+        if (typeof state.template === 'function') {
+          state.template();
+        }    
         if (isArray(value)) {
           show(state);
           if (value.length > 1) {
@@ -471,9 +483,6 @@ function setState(key, value, _this) {
               var textNode = TEXTNODE.cloneNode(false);
               state.el.parentNode.replaceChild(state.el_back, state.el).remove();
               state.el = state.el_back;
-              /*state.el.replaceChild(textNode, state.el_back);
-              state.el.remove();
-              state.el = state.el_back;*/
             }
             if (state.clones && state.clones.length > 1) {
               var l = state.clones.length - 1;
@@ -487,10 +496,8 @@ function setState(key, value, _this) {
           show(state);
           state.template.set(value);
         } else if (hidable(value)) {
-          //state.ELIsList = false;
           hide(state);
         } else if (showable(value)) {
-          //state.ELIsList = false;
           show(state);
         }
       break;
