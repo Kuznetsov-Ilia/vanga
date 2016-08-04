@@ -215,9 +215,7 @@ function prepareState(_this, root, attrs, key, shared) {
         throw {text: 'no el resolved', info: confItem};
       }
       if (isArray(confItem.events)) {
-        confItem.events.forEach(eventName => el
-          .addEventListener(eventName, e => _this.trigger(`${key}:${eventName}`, e))
-        );
+        confItem.events.forEach(eventName => el.addEventListener(eventName, e => (_this.trigger(`${key}:${eventName}`, e), false)));
       }
       var state = {
         type: confItem.type,
@@ -336,10 +334,10 @@ function doUpdates(update) {
         Object.assign(update.el.style, styles);
       } else {
         update.el.setAttribute(key, val);
-        switch (String(update.el)) {
+        /*switch (String(update.el)) {
         case '[object HTMLTextAreaElement]':
         case '[object HTMLInputElement]':
-        case '[object HTMLSelectElement]':
+        case '[object HTMLSelectElement]':*/
           if (['value'].indexOf(key) !== -1) {
             update.el[key] = val;
           } else if (['checked', 'disabled', 'selected', 'readonly'].indexOf(key) !== -1) {
@@ -355,8 +353,8 @@ function doUpdates(update) {
             }
             update.el[key] = val;
           }
-          break;
-        }
+          /*break;
+        }*/
       }
     });
   } else if ('text' in update) {

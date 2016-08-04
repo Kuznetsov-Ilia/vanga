@@ -598,27 +598,27 @@ function doUpdates(update) {
         Object.assign(update.el.style, styles);
       } else {
         update.el.setAttribute(key, val);
-        switch (String(update.el)) {
+        /*switch (String(update.el)) {
         case '[object HTMLTextAreaElement]':
         case '[object HTMLInputElement]':
-        case '[object HTMLSelectElement]':
-          if (['value'].indexOf(key) !== -1) {
-            update.el[key] = val;
-          } else if (['checked', 'disabled', 'selected', 'readonly'].indexOf(key) !== -1) {
-            if (['0', 'false'].indexOf(val) !== -1) {
-              val = false;
-            } else {
-              var num_val = Number(val);
-              if (isNaN(num_val)) {
-                num_val = val;
-              }
-              val = Boolean(num_val);
-            
+        case '[object HTMLSelectElement]':*/
+        if (['value'].indexOf(key) !== -1) {
+          update.el[key] = val;
+        } else if (['checked', 'disabled', 'selected', 'readonly'].indexOf(key) !== -1) {
+          if (['0', 'false'].indexOf(val) !== -1) {
+            val = false;
+          } else {
+            var num_val = Number(val);
+            if (isNaN(num_val)) {
+              num_val = val;
             }
-            update.el[key] = val;
+            val = Boolean(num_val);
+          
           }
-          break;
+          update.el[key] = val;
         }
+          /*break;
+        }*/
       }
     });
   } else if ('text' in update) {
