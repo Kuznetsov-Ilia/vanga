@@ -602,21 +602,21 @@ function doUpdates(update) {
         case '[object HTMLTextAreaElement]':
         case '[object HTMLInputElement]':
         case '[object HTMLSelectElement]':*/
-        if (['value'].indexOf(key) !== -1) {
-          update.el[key] = val;
-        } else if (['checked', 'disabled', 'selected', 'readonly'].indexOf(key) !== -1) {
-          if (['0', 'false'].indexOf(val) !== -1) {
-            val = false;
-          } else {
-            var num_val = Number(val);
-            if (isNaN(num_val)) {
-              num_val = val;
+          if (['value'].indexOf(key) !== -1) {
+            update.el[key] = val;
+          } else if (['checked', 'disabled', 'selected', 'readonly'].indexOf(key) !== -1) {
+            if (['0', 'false'].indexOf(val) !== -1) {
+              val = false;
+            } else {
+              var num_val = Number(val);
+              if (isNaN(num_val)) {
+                num_val = val;
+              }
+              val = Boolean(num_val);
+            
             }
-            val = Boolean(num_val);
-          
+            update.el[key] = val;
           }
-          update.el[key] = val;
-        }
           /*break;
         }*/
       }
@@ -655,8 +655,18 @@ function loadWithIframe (strHTML) {
   }
   var root = TEMPLATE.cloneNode(false);
   root.innerHTML = strHTML;
-  return root.content || root; //templateFallback(root);
+  return root.content || templateFallback(root);
 }
+
+function templateFallback(root) {
+  var f = FRAGMENT.cloneNode(false);
+  var child;
+  while (child = root.firstElementChild) {
+    f.appendChild(child);
+  }
+  return f;
+}
+
 
 function setState(key, value, _this) {
   var originalValue = value;

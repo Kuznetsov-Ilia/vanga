@@ -391,8 +391,18 @@ function loadWithIframe (strHTML) {
   }
   var root = TEMPLATE.cloneNode(false);
   root.innerHTML = strHTML;
-  return root.content || root; //templateFallback(root);
+  return root.content || templateFallback(root);
 }
+
+function templateFallback(root) {
+  var f = FRAGMENT.cloneNode(false);
+  var child;
+  while (child = root.firstElementChild) {
+    f.appendChild(child);
+  }
+  return f;
+}
+
 
 function setState(key, value, _this) {
   var originalValue = value;
