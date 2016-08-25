@@ -1,9 +1,9 @@
 {
   "name": "my-vanga",
-  "version": "1.1.8",
+  "version": "2.1.8",
   "scripts": {
     "gen": "gulp gen",
-    "start": "rollup -c rollup.config.js & rollup -f cjs -i src/parser.js -o parser.js & rollup -f cjs -i src/parser.js -o parser.js",
+    "start": "rollup -c rollup.config.js & rollup -f cjs -i parser.es -o parser.js",
     "deploy": "git add . && git commit -am 'fix' && git push && npm publish",
     "test": "babel-node test | faucet",
     "test-bro": "browserify ./test/index.js > test/bundle.js"
