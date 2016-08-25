@@ -1,6 +1,6 @@
 {
   "name": "my-vanga",
-  "version": "2.1.8",
+  "version": "2.1.9",
   "scripts": {
     "gen": "gulp gen",
     "start": "rollup -c rollup.config.js & rollup -f cjs -i parser.es -o parser.js",
@@ -11,19 +11,20 @@
   "description": "dom templator with plugins for gulp, webpack, browserify, rollup",
   "author": "Ilia Kuznetsov",
   "main": "index.js",
-  "jsnext:main": "src/index.js",
+  "jsnext:main": "index.es",
   "files": [
     "index.js",
+    "index.es",
     "events",
     "plugins",
-    "src",
     "tags",
     "template",
-    "parser.js"
+    "parser.js",
+    "parser.es"
   ],
   "dependencies": {
-    "my-global": "^1.0.0",
-    "my-util": "^1.0.0",
+    "my-global": "^2.0.0",
+    "my-util": "^2.0.0",
     "rollup-plugin-node-resolve": "^1.5.0",
     "left-pad": "*"
   },
