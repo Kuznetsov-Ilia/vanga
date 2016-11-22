@@ -367,7 +367,7 @@ Object.assign(Eventable(Template.prototype), {
     if (this.root) {
       clone.root = this.root.cloneNode(true);
     } else {
-      throw {text: 'no root to clone', info: this};
+      //throw {text: 'no root to clone', info: this};
     }
     return clone;
   },
@@ -505,6 +505,15 @@ function prepareState(_this, root, attrs, key, shared) {
           if (shared[key] instanceof Template) {
             state.isHidden = true;
             state.template = shared[key].render().clone().render(state.prevEl);
+          } else if (typeof shared[key] === 'string' ) {
+            newChild = DIV.cloneNode(false);
+            newChild.html(shared[key]);
+            if (newChild.childNodes.length === 1) {
+              newChild = newChild.childNodes[0];
+            }
+            oldChild = el;
+            state.el = newChild;
+            reduced.childs.push([oldChild, newChild]);
           } else {
             state.isHidden = true;
             state.template = new shared[key]({
@@ -814,7 +823,7 @@ function togglePrevEl(state) {
 
 function makeClones(state, valLength, toBeCloned) {
   var fragment = FRAGMENT.cloneNode(false);
-  var k = toBeCloned.root.childNodes.length;
+  //var k = toBeCloned.root.childNodes.length;
   state.clones = [toBeCloned];
   for (var i = 1; i < valLength; i++) {
     var clone = toBeCloned.clone().render(fragment);
