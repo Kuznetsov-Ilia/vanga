@@ -240,7 +240,7 @@ function prepareState(_this, root, attrs, key, shared) {
         if (shared[key] !== undefined) {
           if (shared[key] instanceof Template) {
             state.isHidden = true;
-            state.template = shared[key]/*.render()*/.clone().render(state.prevEl);
+            state.template = shared[key].render().clone().render(state.prevEl);
           } else if (typeof shared[key] === 'string' ) {
             newChild = DIV.cloneNode(false);
             newChild.html(shared[key]);
@@ -255,7 +255,7 @@ function prepareState(_this, root, attrs, key, shared) {
             state.template = new shared[key]({
               data: confItem.data,
               clone: function (_this, template) {
-                _this.template = template/*.render()*/.clone().render(state.prevEl);
+                _this.template = template.render().clone().render(state.prevEl);
                 // /debugger;
               }
             });
@@ -393,17 +393,49 @@ function resolveEl(arr, root) {
 function gotoChild(root, index) {
   return root.childNodes[index];
 }
+var is660671Bug;
+function test660671Bug () {
+  var t = document.createElement('template');
+  t.innerHTML = '<form></form><b></b>';
+  return t.content.children.length !== 2;
+}
 
+var TABLE;
+function tableFix(strHTML) {
+  if (TABLE === undefined) {
+    TABLE = document.createElement('table');
+  }
+  var table = TABLE.cloneNode(false)
+  table.innerHTML = strHTML;
+  if (table.childNodes[0].tagName.toUpperCase() === 'TBODY') {
+    table = table.childNodes[0];
+  }
+  return copy2Fragment(table);
+}
 function loadWithIframe (strHTML) {
+  if (strHTML.indexOf('<tr') === 0) {
+    return tableFix(strHTML)
+  }
   if (TEMPLATE === undefined) {
     TEMPLATE = document.createElement('template');
   }
   var root = TEMPLATE.cloneNode(false);
+  if (is660671Bug) {
+    root = DIV.cloneNode(false);
+  }
   root.innerHTML = strHTML;
-  return root.content || templateFallback(root);
+
+  if (is660671Bug === undefined && root.content) {
+    is660671Bug = test660671Bug();
+    if (is660671Bug) {
+      root = DIV.cloneNode(false);
+      root.innerHTML = strHTML;      
+    }
+  }
+  return root.content || copy2Fragment(root);
 }
 
-function templateFallback(root) {
+function copy2Fragment(root) {
   var f = FRAGMENT.cloneNode(false);
   var child;
   while (child = root.firstElementChild) {
