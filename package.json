@@ -1,6 +1,6 @@
 {
   "name": "my-vanga",
-  "version": "2.1.9",
+  "version": "2.2.0",
   "scripts": {
     "gen": "gulp gen",
     "start": "rollup -c rollup.config.js & rollup -f cjs -i parser.es -o parser.js",
