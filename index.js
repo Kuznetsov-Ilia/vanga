@@ -517,7 +517,7 @@ function prepareState(_this, root, attrs, key, shared) {
         if (shared[key] !== undefined) {
           if (shared[key] instanceof Template) {
             state.isHidden = true;
-            state.template = shared[key].render().clone().render(state.prevEl);
+            state.template = shared[key]/*.render()*/.clone().render(state.prevEl);
           } else if (typeof shared[key] === 'string' ) {
             newChild = DIV.cloneNode(false);
             newChild.html(shared[key]);
@@ -532,7 +532,7 @@ function prepareState(_this, root, attrs, key, shared) {
             state.template = new shared[key]({
               data: confItem.data,
               clone: function (_this, template) {
-                _this.template = template.render().clone().render(state.prevEl);
+                _this.template = template/*.render()*/.clone().render(state.prevEl);
                 // /debugger;
               }
             });
@@ -722,9 +722,13 @@ function copy2Fragment(root) {
 }
 
 
-function setState(key, value, _this) {
-  var originalValue = value;
-  return function (state) {
+function setState(key, _value, _this) {
+  var originalValue = _value;
+  return function (state, i) {
+    var value = _value;
+    if (state.type !== 'class' && isArray$1(_value)) {
+      value = _value[i];
+    }
     if (state.prevValue !== originalValue) {
       if (typeof value === 'object') {
         state.prevValue = {};
@@ -737,7 +741,7 @@ function setState(key, value, _this) {
       }
       switch (state.type) {
       case 'text':
-        return {type: 'text', el: state.el, value: value, key: key};
+        return {type: 'text', el: state.el, value, key};
       case 'attr':
         var attr = _this.attrs[state.attr];
         return {
